@@ -174,6 +174,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
         <div className="w-[70%] aspect-[3/4] border-2 border-white/20 rounded-[3rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"></div>
       </div>
 
+      {/* Model Loading Overlay */}
+      {!modelsLoaded && !error && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+          <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
+          <p className="text-white text-lg font-bold brand-font tracking-wider">INITIALIZING AI</p>
+          <p className="text-slate-300 text-xs mt-2 font-mono">Loading neural networks...</p>
+        </div>
+      )}
+
       {/* Countdown Overlay */}
       {countdown !== null && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
