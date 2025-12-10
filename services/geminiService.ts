@@ -81,38 +81,3 @@ export const generateHistoricalImage = async (
     throw error;
   }
 };
-
-export const editGeneratedImage = async (
-  base64Image: string,
-  editInstruction: string
-): Promise<string> => {
-  const ai = getAiClient();
-  const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: cleanBase64
-            }
-          },
-          { text: `Edit this image: ${editInstruction}. Maintain the exact facial identity and pose.` }
-        ]
-      }
-    });
-
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:image/jpeg;base64,${part.inlineData.data}`;
-      }
-    }
-    throw new Error("No edited image returned");
-  } catch (error) {
-    console.error("Gemini Edit Error:", error);
-    throw error;
-  }
-};

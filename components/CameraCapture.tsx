@@ -105,6 +105,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
     };
   };
 
+  // Store capture handler in ref to avoid effect dependency issues
+  const captureRef = useRef(handleCaptureImmediate);
+  useEffect(() => {
+    captureRef.current = handleCaptureImmediate;
+  }, [handleCaptureImmediate]);
+
   // Handle countdown logic
   useEffect(() => {
     if (countdown === null) return;
@@ -115,12 +121,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Execute capture
-      handleCaptureImmediate();
+      // Execute capture using ref
+      captureRef.current?.();
       // Delay clearing the "SMILE" text slightly
       setTimeout(() => setCountdown(null), 500);
     }
-  }, [countdown, handleCaptureImmediate]);
+  }, [countdown]);
 
   const startCaptureSequence = () => {
     if (countdown !== null || isDetecting) return;
