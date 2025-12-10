@@ -89,7 +89,16 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceD
       </div>
 
       {/* 2. Controls & Info Area - Slide up sheet style with Animation */}
-      <div className="flex-none bg-slate-900 rounded-t-3xl -mt-6 relative z-10 px-6 pt-8 pb-8 flex flex-col gap-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-800 animate-slide-up">
+      <style>{`
+        @keyframes slide-up-sheet {
+          0% { transform: translateY(100%); }
+          100% { transform: translateY(0); }
+        }
+      `}</style>
+      <div
+        className="flex-none bg-slate-900 rounded-t-3xl -mt-6 relative z-10 px-6 pt-8 pb-8 flex flex-col gap-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-slate-800"
+        style={{ animation: 'slide-up-sheet 1s cubic-bezier(0.19, 1, 0.22, 1) forwards' }}
+      >
 
         {/* Era Title & Fact */}
         <div>
