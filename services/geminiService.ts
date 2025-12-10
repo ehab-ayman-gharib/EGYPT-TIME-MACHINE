@@ -20,19 +20,24 @@ export const generateHistoricalImage = async (
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
   // Construct prompt strictly emphasizing identity preservation
-  let subjectDescription = "the person";
-  if (faceData.totalPeople > 1) {
-    subjectDescription = "the people";
-  }
+  // Calculate detailed group description
+  const parts = [];
+  if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} male${faceData.maleCount > 1 ? 's' : ''}`);
+  if (faceData.femaleCount > 0) parts.push(`${faceData.femaleCount} female${faceData.femaleCount > 1 ? 's' : ''}`);
+  let groupDescription = parts.join(' and ');
+  if (!groupDescription) groupDescription = "the people";
+
+  // Inject into prompt style if placeholder exists
+  const finalPromptStyle = era.promptStyle.replace('{{GROUP_DESCRIPTION}}', groupDescription);
 
   // A very strict prompt structure to guide the model to act as an advanced style transfer
   // rather than generating a new random person.
   const prompt = `
   You are an expert VFX artist specializing in historical reconstruction.
   
-  INPUT IMAGE: containing ${subjectDescription}.
+  INPUT IMAGE: containing ${groupDescription}.
   TARGET ERA: ${era.name}
-  STYLE GUIDANCE: ${era.promptStyle}
+  STYLE GUIDANCE: ${finalPromptStyle}
   
   MANDATORY REQUIREMENTS:
   1. IDENTITY LOCK: The generated image MUST feature the exact same face(s) as the input image. Keep facial features, eye shape, nose shape, and mouth shape identical.
@@ -43,6 +48,10 @@ export const generateHistoricalImage = async (
   
   Output a high-resolution, photorealistic image.
   `;
+
+  console.log("------------------- GENERATED PROMPT -------------------");
+  console.log(prompt);
+  console.log("--------------------------------------------------------");
 
   try {
     // Using gemini-2.5-flash-image for transformation tasks
