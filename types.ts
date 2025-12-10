@@ -18,7 +18,7 @@ export interface EraData {
   description: string;
   previewImage: string;
   promptStyle: string;
-  funFact: string;
+
 }
 
 export interface FaceDetectionResult {

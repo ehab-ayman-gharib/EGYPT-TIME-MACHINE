@@ -120,12 +120,13 @@ export const loadFaceApiModels = async (): Promise<boolean> => {
             }
 
             // Load the DETECTOR (Mandatory)
-            await faceapi.nets.tinyFaceDetector.loadFromUri(baseUrl);
+            // Use SSD Mobilenet V1 for higher accuracy as requested
+            await faceapi.nets.ssdMobilenetv1.loadFromUri(baseUrl);
 
             // Verify it actually loaded
             // @ts-ignore
-            if (!faceapi.nets.tinyFaceDetector.params) {
-                throw new Error("TinyFaceDetector loaded but params are empty");
+            if (!faceapi.nets.ssdMobilenetv1.params) {
+                throw new Error("SSD Mobilenet V1 loaded but params are empty");
             }
 
             // Load AUXILIARY models (Optional)
@@ -175,12 +176,14 @@ export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElem
     try {
         // Strict Check: Is the detector actually ready?
         // @ts-ignore
-        if (!faceapi.nets.tinyFaceDetector.isLoaded || !faceapi.nets.tinyFaceDetector.params) {
-            console.warn("TinyFaceDetector not ready during inference request.");
+        if (!faceapi.nets.ssdMobilenetv1.isLoaded || !faceapi.nets.ssdMobilenetv1.params) {
+            console.warn("SSD Mobilenet V1 not ready during inference request.");
             return fallback;
         }
 
-        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 });
+        // Use SSD Mobilenet V1 Options for high accuracy
+        // minConfidence 0.5 filters out low quality "ghost" faces
+        const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
 
         // Build task chain
         let task: any = faceapi.detectAllFaces(videoElement, options);
