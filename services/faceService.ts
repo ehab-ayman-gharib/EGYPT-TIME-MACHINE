@@ -166,7 +166,7 @@ export const loadFaceApiModels = async (): Promise<boolean> => {
     return modelLoadPromise;
 };
 
-export const detectFaces = async (videoElement: HTMLVideoElement, isLoaded: boolean): Promise<FaceDetectionResult> => {
+export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement, isLoaded: boolean): Promise<FaceDetectionResult> => {
     // Default safe fallback
     const fallback: FaceDetectionResult = { maleCount: 0, femaleCount: 1, totalPeople: 1 };
 

@@ -10,12 +10,12 @@ const getAiClient = () => {
 };
 
 export const generateHistoricalImage = async (
-  base64Image: string, 
-  era: EraData, 
+  base64Image: string,
+  era: EraData,
   faceData: FaceDetectionResult
 ): Promise<string> => {
   const ai = getAiClient();
-  
+
   // Clean base64 string
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
@@ -39,6 +39,7 @@ export const generateHistoricalImage = async (
   2. POSE LOCK: Keep the exact same head pose, angle, and expression as the input.
   3. TRANSFORMATION: Only change the clothing, accessories, and hairstyle to match the ${era.name}.
   4. ENVIRONMENT: Place them in a realistic, depth-of-field background appropriate for the era.
+  5. ASPECT RATIO: The output image MUST be in vertical 9:16 aspect ratio (Portrait).
   
   Output a high-resolution, photorealistic image.
   `;
@@ -47,6 +48,13 @@ export const generateHistoricalImage = async (
     // Using gemini-2.5-flash-image for transformation tasks
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
+
+      config: {
+        // @ts-ignore - imageConfig is supported by this model but missing in SDK types
+        imageConfig: {
+          aspectRatio: "9:16"
+        }
+      },
       contents: {
         parts: [
           {
@@ -66,7 +74,7 @@ export const generateHistoricalImage = async (
         return `data:image/jpeg;base64,${part.inlineData.data}`;
       }
     }
-    
+
     throw new Error("No image generated");
   } catch (error) {
     console.error("Gemini Generation Error:", error);

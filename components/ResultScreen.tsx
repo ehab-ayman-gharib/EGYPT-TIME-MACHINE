@@ -45,17 +45,29 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceD
   return (
     <div className="h-full w-full flex flex-col bg-slate-900">
       {/* 1. Image Area - Takes priority */}
-      <div className="relative flex-grow bg-black w-full overflow-hidden">
+      <div className="relative flex-grow bg-black w-full overflow-hidden flex items-center justify-center">
+        {/* Background Blur Effect */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <img
+            src={imageSrc}
+            alt=""
+            className="w-full h-full object-cover opacity-60 blur-2xl scale-110"
+          />
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+
         {isProcessingEdit && (
           <div className="absolute inset-0 bg-black/70 z-30 flex items-center justify-center flex-col animate-fade-in">
             <Sparkles className="w-12 h-12 text-yellow-400 animate-spin mb-4" />
             <span className="text-white font-bold tracking-widest text-sm">REFINING HISTORY...</span>
           </div>
         )}
+
+        {/* Main Image */}
         <img
           src={imageSrc}
           alt="Generated Portrait"
-          className="w-full h-full object-cover animate-fade-in"
+          className="relative z-10 w-full h-full object-contain animate-fade-in drop-shadow-2xl"
         />
 
         {/* Floating Actions on Image */}

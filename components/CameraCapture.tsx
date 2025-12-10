@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronLeft, Upload } from 'lucide-react';
 import { loadFaceApiModels, detectFaces } from '../services/faceService';
 import { FaceDetectionResult } from '../types';
 
@@ -16,6 +16,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -23,12 +24,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
         const loaded = await loadFaceApiModels();
         setModelsLoaded(loaded);
 
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'user', 
-            width: { ideal: 720 }, 
-            height: { ideal: 1280 } 
-          } 
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 720 },
+            height: { ideal: 1280 }
+          }
         });
         setStream(mediaStream);
         if (videoRef.current) {
@@ -52,24 +53,57 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
   const handleCaptureImmediate = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setIsDetecting(true);
-    
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    
+
     if (ctx) {
       // Draw standard
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL('image/jpeg', 0.9);
-      
+
       // Pass modelsLoaded state to service
       const faceData = await detectFaces(video, modelsLoaded);
       onCapture(imageData, faceData);
     }
     setIsDetecting(false);
   }, [modelsLoaded, onCapture]);
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsDetecting(true);
+
+    // Create an image element to read the file
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      if (!canvasRef.current) return;
+      const canvas = canvasRef.current;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+
+        // Run detection on the image element directly
+        const faceData = await detectFaces(img, modelsLoaded);
+        onCapture(imageData, faceData);
+      }
+      setIsDetecting(false);
+    };
+  };
 
   // Handle countdown logic
   useEffect(() => {
@@ -107,33 +141,33 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
     <div className="h-full w-full bg-black relative flex flex-col">
       {/* Video Feed - Full Screen Portrait */}
       <div className="absolute inset-0 z-0">
-        <video 
-          ref={videoRef} 
-          autoPlay 
-          playsInline 
-          muted 
-          className="w-full h-full object-cover transform -scale-x-100" 
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover transform -scale-x-100"
         />
         <canvas ref={canvasRef} className="hidden" />
       </div>
-      
+
       {/* Face Guide Overlay */}
       <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-         <div className="w-[70%] aspect-[3/4] border-2 border-white/20 rounded-[3rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"></div>
+        <div className="w-[70%] aspect-[3/4] border-2 border-white/20 rounded-[3rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"></div>
       </div>
 
       {/* Countdown Overlay */}
       {countdown !== null && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-            <div className="text-9xl font-bold text-white drop-shadow-2xl animate-ping-large brand-font">
-                {countdown === 0 ? 'SMILE!' : countdown}
-            </div>
+          <div className="text-9xl font-bold text-white drop-shadow-2xl animate-ping-large brand-font">
+            {countdown === 0 ? 'SMILE!' : countdown}
+          </div>
         </div>
       )}
 
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 p-6 z-20 flex justify-between items-start bg-gradient-to-b from-black/60 to-transparent">
-         <button 
+        <button
           onClick={onBack}
           className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white/10 transition-colors"
         >
@@ -142,8 +176,25 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
       </div>
 
       {/* Footer Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-        <button 
+      <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+        {/* Upload Button */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          accept="image/*"
+          className="hidden"
+        />
+        <button
+          onClick={handleFileUpload}
+          disabled={isDetecting || countdown !== null}
+          className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors disabled:opacity-50"
+        >
+          <Upload size={24} />
+        </button>
+
+        {/* Capture Button */}
+        <button
           onClick={startCaptureSequence}
           disabled={isDetecting || countdown !== null}
           className={`
@@ -151,12 +202,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
             ${(isDetecting || countdown !== null) ? 'bg-slate-500 scale-95 cursor-not-allowed' : 'bg-red-600 hover:scale-105 active:scale-95 cursor-pointer'}
           `}
         >
-           {isDetecting ? (
-             <RefreshCw className="w-8 h-8 text-white animate-spin" />
-           ) : (
-             <div className="w-16 h-16 rounded-full border-2 border-black/10"></div>
-           )}
+          {isDetecting ? (
+            <RefreshCw className="w-8 h-8 text-white animate-spin" />
+          ) : (
+            <div className="w-16 h-16 rounded-full border-2 border-black/10"></div>
+          )}
         </button>
+
+        {/* Placeholder for symmetry */}
+        <div className="w-[56px]"></div>
       </div>
     </div>
   );
