@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { EraData, FaceDetectionResult } from '../types';
 import { Download, RotateCcw, Sparkles, Send, Share2, Bug } from 'lucide-react';
 import { editGeneratedImage } from '../services/geminiService';
+import eraFacts from '../data/facts.json';
 
 interface ResultScreenProps {
   imageSrc: string;
@@ -13,6 +14,15 @@ interface ResultScreenProps {
 
 export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceData, onRestart, onUpdateImage }) => {
   const [isEditing, setIsEditing] = useState(false);
+
+  const randomFact = useMemo(() => {
+    // @ts-ignore - JSON import might not be strictly typed without config
+    const list = eraFacts[era.id];
+    if (list && Array.isArray(list) && list.length > 0) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+    return era.funFact;
+  }, [era.id, era.funFact]);
   const [editPrompt, setEditPrompt] = useState("");
   const [isProcessingEdit, setIsProcessingEdit] = useState(false);
 
@@ -108,7 +118,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceD
           </div>
           <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
             <p className="text-slate-300 text-sm italic leading-relaxed">
-              "{era.funFact}"
+              "{randomFact}"
             </p>
           </div>
         </div>
