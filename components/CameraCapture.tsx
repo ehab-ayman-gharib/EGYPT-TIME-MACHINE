@@ -89,12 +89,24 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
     img.onload = async () => {
       if (!canvasRef.current) return;
       const canvas = canvasRef.current;
-      canvas.width = img.width;
-      canvas.height = img.height;
+
+      // Resize logic to prevent huge payloads
+      const MAX_DIMENSION = 1500;
+      let width = img.width;
+      let height = img.height;
+
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
 
       if (ctx) {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, width, height);
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
 
         // Run detection on the image element directly
