@@ -6,13 +6,14 @@ import { CameraCapture } from './components/CameraCapture';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
 import { generateHistoricalImage } from './services/geminiService';
+import { applyEraStamp } from './services/stampService';
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
-  
+
   const handleStart = () => {
     setCurrentScreen(AppScreen.ERA_SELECTION);
   };
@@ -30,7 +31,11 @@ const App: React.FC = () => {
 
     try {
       const resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
-      setGeneratedImage(resultImage);
+
+      // Apply Era Stamp
+      const stampedImage = await applyEraStamp(resultImage, selectedEra.id);
+
+      setGeneratedImage(stampedImage);
       setCurrentScreen(AppScreen.RESULT);
     } catch (error) {
       console.error("Generation failed", error);
@@ -56,10 +61,10 @@ const App: React.FC = () => {
         return <SplashScreen onStart={handleStart} />;
       case AppScreen.ERA_SELECTION:
         return (
-            <EraSelection 
-                onSelectEra={handleEraSelect} 
-                onBack={() => setCurrentScreen(AppScreen.SPLASH)} 
-            />
+          <EraSelection
+            onSelectEra={handleEraSelect}
+            onBack={() => setCurrentScreen(AppScreen.SPLASH)}
+          />
         );
       case AppScreen.CAMERA:
         return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
@@ -68,9 +73,9 @@ const App: React.FC = () => {
       case AppScreen.RESULT:
         return (
           selectedEra && generatedImage ? (
-            <ResultScreen 
-              imageSrc={generatedImage} 
-              era={selectedEra} 
+            <ResultScreen
+              imageSrc={generatedImage}
+              era={selectedEra}
               faceData={faceDetectionResult}
               onRestart={handleRestart}
               onUpdateImage={handleUpdateImage}
