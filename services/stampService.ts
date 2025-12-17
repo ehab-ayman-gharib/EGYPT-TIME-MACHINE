@@ -5,6 +5,7 @@ const STAMP_MAP: Record<EraId, string> = {
     [EraId.OLD_EGYPT]: '/Stamps/1.png',
     [EraId.COPTIC_EGYPT]: '/Stamps/2.png',
     [EraId.ISLAMIC_EGYPT]: '/Stamps/3.png',
+    [EraId.MODERN_EGYPT]: '/Stamps/4.png',
 };
 
 export const applyEraStamp = (imageSrc: string, eraId: EraId): Promise<string> => {

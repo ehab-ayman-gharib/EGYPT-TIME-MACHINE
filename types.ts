@@ -10,6 +10,7 @@ export enum EraId {
   OLD_EGYPT = 'OLD_EGYPT',
   COPTIC_EGYPT = 'COPTIC_EGYPT',
   ISLAMIC_EGYPT = 'ISLAMIC_EGYPT',
+  MODERN_EGYPT = 'MODERN_EGYPT',
 }
 
 export interface EraData {
