@@ -18,7 +18,9 @@ export interface EraData {
   description: string;
   previewImage: string;
   promptStyle: string;
-
+  singleMalePrompt?: string;
+  singleFemalePrompt?: string;
+  backgrounds: string[];
 }
 
 export interface FaceDetectionResult {

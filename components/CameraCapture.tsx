@@ -133,10 +133,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Execute capture using ref
-      captureRef.current?.();
-      // Delay clearing the "SMILE" text slightly
-      setTimeout(() => setCountdown(null), 500);
+      // Delay actual capture slightly to ensure "SMILE" text paints first and avoids blocking the UI thread immediately
+      const captureTimer = setTimeout(() => {
+        captureRef.current?.();
+        // Clear countdown after a moment so "SMILE" stays visible briefly
+        setTimeout(() => setCountdown(null), 1000);
+      }, 100);
+      return () => clearTimeout(captureTimer);
     }
   }, [countdown]);
 
@@ -169,10 +172,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Face Guide Overlay */}
-      <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
-        <div className="w-[70%] aspect-[3/4] border-2 border-white/20 rounded-[3rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]"></div>
-      </div>
+
 
       {/* Model Loading Overlay */}
       {!modelsLoaded && !error && (
@@ -185,7 +185,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
 
       {/* Countdown Overlay */}
       {countdown !== null && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+        <div key={countdown} className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="text-9xl font-bold text-white drop-shadow-2xl animate-ping-large brand-font">
             {countdown === 0 ? 'SMILE!' : countdown}
           </div>
@@ -224,16 +224,39 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
         <button
           onClick={startCaptureSequence}
           disabled={isDetecting || countdown !== null}
-          className={`
-            w-20 h-20 rounded-full border-4 border-white flex items-center justify-center shadow-lg transition-all duration-200
-            ${(isDetecting || countdown !== null) ? 'bg-slate-500 scale-95 cursor-not-allowed' : 'bg-red-600 hover:scale-105 active:scale-95 cursor-pointer'}
-          `}
+          className="group relative w-28 h-28 flex items-center justify-center focus:outline-none"
         >
-          {isDetecting ? (
-            <RefreshCw className="w-8 h-8 text-white animate-spin" />
-          ) : (
-            <div className="w-16 h-16 rounded-full border-2 border-black/10"></div>
+          {/* Idle Pulse Ring - Only visible when idle */}
+          {!isDetecting && countdown === null && (
+            <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium"></div>
           )}
+
+          {/* Main Button Construction */}
+          <div className={`
+            relative w-20 h-20 rounded-full border-[4px] flex items-center justify-center transition-all duration-300 z-10 bg-black/20 backdrop-blur-sm
+            ${isDetecting
+              ? 'border-slate-500 scale-95'
+              : countdown !== null
+                ? 'border-white scale-100' // Static during countdown
+                : 'border-white group-hover:scale-105 group-active:scale-95' // Interactive idle
+            }
+          `}>
+            {/* Inner Shutter Circle */}
+            <div className={`
+               rounded-full transition-all duration-300 shadow-sm
+               ${isDetecting
+                ? 'w-2 h-2 bg-slate-500 opacity-0'
+                : 'w-16 h-16 bg-white' // Simple white circle always
+              }
+             `}></div>
+
+            {/* Spinner Overlay */}
+            {isDetecting && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <RefreshCw className="w-8 h-8 text-white animate-spin" />
+              </div>
+            )}
+          </div>
         </button>
 
         {/* Placeholder for symmetry */}

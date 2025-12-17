@@ -27,8 +27,31 @@ export const generateHistoricalImage = async (
   let groupDescription = parts.join(' and ');
   if (!groupDescription) groupDescription = "the people";
 
-  // Inject into prompt style if placeholder exists
-  const finalPromptStyle = era.promptStyle.replace('{{GROUP_DESCRIPTION}}', groupDescription);
+  // Determine the base prompt style
+  let basePromptStyle = era.promptStyle;
+
+  // specialized prompts for single subjects
+  if (faceData.totalPeople === 1) {
+    if (faceData.maleCount === 1 && era.singleMalePrompt) {
+      basePromptStyle = era.singleMalePrompt;
+    } else if (faceData.femaleCount === 1 && era.singleFemalePrompt) {
+      basePromptStyle = era.singleFemalePrompt;
+    }
+  }
+
+  // Select random background
+  let selectedBackground = "";
+  if (era.backgrounds && era.backgrounds.length > 0) {
+    const randomIndex = Math.floor(Math.random() * era.backgrounds.length);
+    selectedBackground = era.backgrounds[randomIndex];
+    console.log(`[GeminiService] Selected Background Index: ${randomIndex}`);
+  }
+
+  // Inject into prompt style if placeholder exists (though specialized prompts might not need it, we run it to be safe)
+  let finalPromptStyle = basePromptStyle.replace('{{GROUP_DESCRIPTION}}', groupDescription);
+  if (selectedBackground) {
+    finalPromptStyle = finalPromptStyle.replace('{{BACKGROUND}}', selectedBackground);
+  }
 
   // A very strict prompt structure to guide the model to act as an advanced style transfer
   // rather than generating a new random person.
