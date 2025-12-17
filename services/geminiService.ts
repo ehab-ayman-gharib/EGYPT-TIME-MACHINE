@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
 import { EraData, FaceDetectionResult } from '../types';
 
 const getAiClient = () => {
@@ -53,40 +53,49 @@ export const generateHistoricalImage = async (
     finalPromptStyle = finalPromptStyle.replace('{{BACKGROUND}}', selectedBackground);
   }
 
-  // A very strict prompt structure to guide the model to act as an advanced style transfer
-  // rather than generating a new random person.
+  // A strict prompt to guide the model
   const prompt = `
-  You are an expert VFX artist specializing in historical reconstruction.
+  You are an expert VFX artist.
   
-  INPUT IMAGE: containing ${groupDescription}.
-  TARGET ERA: ${era.name}
-  STYLE GUIDANCE: ${finalPromptStyle}
+  INPUT: Photo of ${groupDescription}.
+  TASK: Change their clothing and style to match the ${era.name} (${era.description}).
+  style: ${finalPromptStyle}
   
-  MANDATORY REQUIREMENTS:
-  1. IDENTITY LOCK: The generated image MUST feature the exact same face(s) as the input image. Keep facial features, eye shape, nose shape, and mouth shape identical.
-  2. POSE LOCK: Keep the exact same head pose, angle, and expression as the input.
-  3. TRANSFORMATION: Only change the clothing, accessories, and hairstyle to match the ${era.name}.
-  4. ENVIRONMENT: Place them in a realistic, depth-of-field background appropriate for the era.
-  5. ASPECT RATIO: The output image MUST be in vertical 9:16 aspect ratio (Portrait).
-  
-  Output a high-resolution, photorealistic image.
+  REQUIREMENTS:
+  - Keep the original face and identity visible and recognizable.
+  - Change ONLY clothing, hair, and accessories to being historically accurate to ${era.name}.
+  - Place in a ${era.name} environment.
+  - Photorealistic, high quality, 9:16 portrait.
   `;
 
   console.log("------------------- GENERATED PROMPT -------------------");
   console.log(prompt);
   console.log("--------------------------------------------------------");
 
+  // Using raw object structure to bypass potential TS mismatches with the SDK
+  const safetySettings: any[] = [
+    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_NONE' }
+  ];
+
+  const requestConfig: any = {
+    // @ts-ignore
+    imageConfig: {
+      aspectRatio: "9:16"
+    },
+    safetySettings: safetySettings
+  };
+
+  //console.log("Gemini Request Config:", JSON.stringify(requestConfig, null, 2));
+
   try {
     // Using gemini-2.5-flash-image for transformation tasks
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-
-      config: {
-        // @ts-ignore - imageConfig is supported by this model but missing in SDK types
-        imageConfig: {
-          aspectRatio: "9:16"
-        }
-      },
+      config: requestConfig,
       contents: {
         parts: [
           {
@@ -101,12 +110,21 @@ export const generateHistoricalImage = async (
     });
 
     // Extract image from response
-    for (const part of response.candidates?.[0]?.content?.parts || []) {
-      if (part.inlineData) {
-        return `data:image/jpeg;base64,${part.inlineData.data}`;
+    const candidate = response.candidates?.[0];
+    if (candidate) {
+      if (candidate.finishReason !== 'STOP') {
+        console.warn('Gemini Generation Warning: Finish Reason:', candidate.finishReason);
+        console.warn('Safety Ratings:', JSON.stringify(candidate.safetyRatings, null, 2));
+      }
+
+      for (const part of candidate.content?.parts || []) {
+        if (part.inlineData) {
+          return `data:image/jpeg;base64,${part.inlineData.data}`;
+        }
       }
     }
 
+    console.error('Gemini No Image Generated. Response:', JSON.stringify(response, null, 2));
     throw new Error("No image generated");
   } catch (error) {
     console.error("Gemini Generation Error:", error);
