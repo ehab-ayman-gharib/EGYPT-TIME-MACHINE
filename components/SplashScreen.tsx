@@ -6,13 +6,14 @@ import { ERAS } from '../constants';
 interface SplashScreenProps {
   onStart: () => void;
   onSelectEra: (era: EraData) => void;
+  isMuted: boolean;
+  setIsMuted: (muted: boolean) => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra }) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra, isMuted, setIsMuted }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isExiting, setIsExiting] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const isExitingRef = useRef(false);
 
   const unmuteVideo = () => {

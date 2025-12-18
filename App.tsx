@@ -12,6 +12,7 @@ const App: React.FC = () => {
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   const handleStart = () => {
     setCurrentScreen(AppScreen.ERA_SELECTION);
@@ -57,10 +58,10 @@ const App: React.FC = () => {
   const renderScreen = () => {
     switch (currentScreen) {
       case AppScreen.SPLASH:
-        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} />;
+        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
       case AppScreen.ERA_SELECTION:
         // This screen is now merged with SPLASH
-        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} />;
+        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
       case AppScreen.CAMERA:
         return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
       case AppScreen.PROCESSING:
