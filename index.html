@@ -117,6 +117,20 @@
     .animate-pulse-medium {
       animation: pulse-slow 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
+
+    @keyframes flash-out {
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .animate-flash-out {
+      animation: flash-out 0.8s ease-out forwards;
+    }
   </style>
   <script type="importmap">
 {

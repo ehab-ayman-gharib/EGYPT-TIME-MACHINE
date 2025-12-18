@@ -16,6 +16,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [showFlash, setShowFlash] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,12 +134,18 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Delay actual capture slightly to ensure "SMILE" text paints first and avoids blocking the UI thread immediately
+      // Trigger Flash
+      setShowFlash(true);
+
       const captureTimer = setTimeout(() => {
         captureRef.current?.();
-        // Clear countdown after a moment so "SMILE" stays visible briefly
-        setTimeout(() => setCountdown(null), 1000);
-      }, 100);
+
+        // Cleanup flash and countdown
+        setTimeout(() => {
+          setShowFlash(false);
+          setCountdown(null);
+        }, 500);
+      }, 50);
       return () => clearTimeout(captureTimer);
     }
   }, [countdown]);
@@ -183,23 +190,50 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
         </div>
       )}
 
-      {/* Countdown Overlay */}
-      {countdown !== null && (
-        <div key={countdown} className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="text-9xl font-bold text-white drop-shadow-2xl animate-ping-large brand-font">
-            {countdown === 0 ? 'SMILE!' : countdown}
+      {/* Countdown Overlay - Solid Pie Slice */}
+      {countdown !== null && countdown > 0 && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
+          <div className="relative w-56 h-56 flex items-center justify-center rounded-full border-[8px] border-white shadow-2xl">
+            {/* The Pie Slice Fill */}
+            <div
+              className="absolute inset-0 rounded-full transition-all duration-1000 ease-linear"
+              style={{
+                background: `conic-gradient(#eab308 ${(countdown / 3) * 360}deg, rgba(234, 179, 8, 0.2) 0deg)`
+              }}
+            />
+
+            {/* Centered Text */}
+            <span className="relative z-10 text-8xl font-bold text-white brand-font drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+              {countdown}
+            </span>
           </div>
         </div>
       )}
 
+      {/* Flash Effect */}
+      {showFlash && (
+        <div className="absolute inset-0 z-[100] bg-white animate-flash-out pointer-events-none" />
+      )}
+
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-6 z-20 flex justify-between items-start bg-gradient-to-b from-black/60 to-transparent">
+      <div className="absolute top-0 left-0 right-0 p-6 z-20 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
         <button
           onClick={onBack}
-          className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white/10 transition-colors"
+          className="w-12 h-12 flex items-center justify-center bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white/10 transition-colors"
         >
           <ChevronLeft size={24} />
         </button>
+
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <img
+            src="/Eagle-Logo.png"
+            alt="Egypt"
+            className="w-24 md:w-36 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+          />
+        </div>
+
+        {/* Empty spacer for flex alignment */}
+        <div className="w-12" />
       </div>
 
       {/* Footer Controls */}
