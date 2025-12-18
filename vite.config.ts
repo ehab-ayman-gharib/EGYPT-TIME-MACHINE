@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
           description: "Journey through Egypt's history with AI",
           theme_color: '#0f172a',
           background_color: '#0f172a',
-          display: 'standalone',
+          display: 'fullscreen',
           orientation: 'portrait',
           icons: [
             {

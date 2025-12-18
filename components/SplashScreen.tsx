@@ -17,9 +17,17 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
   const isExitingRef = useRef(false);
 
   const unmuteVideo = () => {
+    // Enable Audio
     if (videoRef.current && isMuted) {
       videoRef.current.muted = false;
       setIsMuted(false);
+    }
+
+    // Trigger Fullscreen
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
     }
   };
 

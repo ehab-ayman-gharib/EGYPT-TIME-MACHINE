@@ -44,13 +44,52 @@ export const generateHistoricalImage = async (
   if (era.backgrounds && era.backgrounds.length > 0) {
     const randomIndex = Math.floor(Math.random() * era.backgrounds.length);
     selectedBackground = era.backgrounds[randomIndex];
-    console.log(`[GeminiService] Selected Background Index: ${randomIndex}`);
   }
 
-  // Inject into prompt style if placeholder exists (though specialized prompts might not need it, we run it to be safe)
+  // Select random clothing if provided
+  let selectedClothing = "";
+  if (era.clothing) {
+    if (Array.isArray(era.clothing)) {
+      if (era.clothing.length > 0) {
+        const randomIndex = Math.floor(Math.random() * era.clothing.length);
+        selectedClothing = era.clothing[randomIndex];
+      }
+    } else {
+      // It's the { men: string[], women: string[] } object
+      let pool: string[] = [];
+      if (faceData.totalPeople === 1) {
+        if (faceData.maleCount === 1) {
+          pool = era.clothing.men;
+        } else if (faceData.femaleCount === 1) {
+          pool = era.clothing.women;
+        }
+      } else {
+        // For groups, combine them or pick one at random
+        // Simplest: pick from either list at random
+        const useMen = Math.random() > 0.5;
+        pool = useMen ? era.clothing.men : era.clothing.women;
+      }
+
+      if (pool.length > 0) {
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        selectedClothing = pool[randomIndex];
+      }
+    }
+  }
+
+  // Inject into prompt style
   let finalPromptStyle = basePromptStyle.replace('{{GROUP_DESCRIPTION}}', groupDescription);
+
   if (selectedBackground) {
     finalPromptStyle = finalPromptStyle.replace('{{BACKGROUND}}', selectedBackground);
+  }
+
+  if (selectedClothing) {
+    // Replace all occurrences of {{CLOTHING}}
+    finalPromptStyle = finalPromptStyle.replaceAll('{{CLOTHING}}', selectedClothing);
+  } else {
+    // If no clothing array provided but placeholder exists, remove it
+    finalPromptStyle = finalPromptStyle.replaceAll('{{CLOTHING}}', "");
   }
 
   // A strict prompt to guide the model

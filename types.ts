@@ -23,6 +23,10 @@ export interface EraData {
   singleFemalePrompt?: string;
   backgrounds: string[];
   stamps: string[];
+  clothing?: string[] | {
+    men: string[];
+    women: string[];
+  };
 }
 
 export interface FaceDetectionResult {
