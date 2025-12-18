@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AppScreen, EraData, FaceDetectionResult } from './types';
 import { SplashScreen } from './components/SplashScreen';
-import { EraSelection } from './components/EraSelection';
 import { CameraCapture } from './components/CameraCapture';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
@@ -58,14 +57,10 @@ const App: React.FC = () => {
   const renderScreen = () => {
     switch (currentScreen) {
       case AppScreen.SPLASH:
-        return <SplashScreen onStart={handleStart} />;
+        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} />;
       case AppScreen.ERA_SELECTION:
-        return (
-          <EraSelection
-            onSelectEra={handleEraSelect}
-            onBack={() => setCurrentScreen(AppScreen.SPLASH)}
-          />
-        );
+        // This screen is now merged with SPLASH
+        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} />;
       case AppScreen.CAMERA:
         return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
       case AppScreen.PROCESSING:
