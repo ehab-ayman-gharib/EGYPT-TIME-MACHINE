@@ -58,7 +58,7 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             const padding = canvas.width * 0.05;
 
             // 1. Draw Eagle Logo - Top Left
-            const logoScale = 0.22;
+            const logoScale = 0.4;
             const logoWidth = canvas.width * logoScale;
             const logoHeight = logoWidth * (logoImage.height / logoImage.width);
             ctx.drawImage(logoImage, padding, padding, logoWidth, logoHeight);
