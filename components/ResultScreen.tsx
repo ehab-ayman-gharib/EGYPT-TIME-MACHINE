@@ -31,7 +31,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceD
         const formData = new FormData();
         formData.append('image', blob, 'result.png');
 
-        const response = await fetch('https://splendid-mermaid-198666.netlify.app/upload', {
+        const response = await fetch('https://qr-web-api.vercel.app/upload', {
           method: 'POST',
           body: formData,
         });
