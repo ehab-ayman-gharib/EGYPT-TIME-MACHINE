@@ -22,6 +22,7 @@ export interface EraData {
   singleMalePrompt?: string;
   singleFemalePrompt?: string;
   backgrounds: string[];
+  stamps: string[];
 }
 
 export interface FaceDetectionResult {

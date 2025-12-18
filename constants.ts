@@ -18,6 +18,11 @@ export const ERAS: EraData[] = [
       "the Valley of the Kings nestled among dramatic desert cliffs, ancient rock-cut tomb entrances carved into golden limestone mountains, soft desert haze drifting through the valley. The sky is pale and expansive, sunlight washing over the terrain, subtle shadows and windblown sand creating a solemn, mysterious, and reverent atmosphere.",
       "the Temple of Hatshepsut rising in grand terraces against towering limestone cliffs, symmetrical colonnades and statues bathed in warm desert light. The scene is calm and majestic, with soft atmospheric haze, gentle shadows, muted earth tones, and a timeless sense of royal power and architectural harmony.",
       "the Abu Simbel Temples carved directly into a colossal sandstone cliff, massive seated statues of Ramses II illuminated by dramatic sunlight. The desert landscape is vast and silent, warm tones of sand and stone dominate the scene, subtle atmospheric haze, strong contrast lighting, monumental, powerful, and timeless."
+    ],
+    stamps: [
+      "/Stamps/Old-Egyptian/1.png",
+      "/Stamps/Old-Egyptian/2.png",
+      "/Stamps/Old-Egyptian/3.png"
     ]
   },
   {
@@ -37,6 +42,10 @@ export const ERAS: EraData[] = [
       "the Monastery of Saint Simon the Tanner carved into the Mokattam cliffs, massive stone walls and amphitheater-like spaces hewn directly from the rock. Sunlight streams into the open sanctuary, illuminating carved crosses and simple stone surfaces. The scale is monumental yet humble, evoking devotion, endurance, and faith.",
       "the Church of Saint George (Mar Girgis) in Old Cairo, with its distinctive round stone structure, ancient brickwork, and wooden iconostasis. Soft daylight enters through small arched windows, highlighting worn stone textures and sacred silence. The atmosphere is solemn, historical, and deeply spiritual.",
       "Saint Catherine’s Monastery at the foot of Mount Sinai, surrounded by rugged granite mountains and desert terrain. Thick stone walls enclose the ancient complex, with cypress trees, simple courtyards, and a vast open sky above. The light is clear and crisp, the air pure, creating a feeling of isolation, holiness, and timeless monastic life."
+    ],
+    stamps: [
+      "/Stamps/Coptic/1.png",
+      "/Stamps/Coptic/2.png"
     ]
   },
   {
@@ -53,6 +62,12 @@ export const ERAS: EraData[] = [
       "the Mosque-Madrasa of Sultan Hassan, towering Mamluk architecture with monumental stone portals, soaring arches, and intricate geometric carvings. Shafts of sunlight descend from high windows, creating dramatic light beams and deep contrast. The atmosphere is majestic, awe-inspiring, and solemn, with cinematic volumetric lighting.",
       "the Mosque of Ibn Tulun with its vast open courtyard and spiral minaret, sunlit stone arcades forming repeating arches around the space. Late afternoon light casts soft golden tones across textured plaster walls, with long shadows and a sense of openness, serenity, and timeless Islamic simplicity.",
       "the Qalawun Complex on Al-Muizz Street, featuring richly decorated facades, carved stone details, and elegant arches. Warm lantern light mixes with fading daylight, creating a balanced glow of amber and soft blue tones. The atmosphere is intimate yet grand, historical, and vibrant, with subtle reflections and gentle atmospheric haze."
+    ],
+    stamps: [
+      "/Stamps/Islamic/1.png",
+      "/Stamps/Islamic/2.png",
+      "/Stamps/Islamic/3.png",
+      "/Stamps/Islamic/4.png"
     ]
   },
   {
@@ -69,6 +84,9 @@ export const ERAS: EraData[] = [
       "a colorful hot air balloon basket high above Luxor at sunrise, with a breathtaking view of the Valley of the Kings and lush green fields below. The sky is filled with other balloons, creating a magical and adventurous scene.",
       "the bustling Khan el-Khalili market in Old Cairo, but with a modern vibrancy. Surrounded by glowing lanterns, brass souvenirs, and colorful textiles, sipping tea at a historic cafe like El Fishawy. The atmosphere is lively, exotic, and culturally rich.",
       "the Great Sphinx of Giza, but from a modern tourist perspective, perhaps with a camel nearby and the pyramids in the background. The sky is bright blue, and the scene is iconic and grand.",
+    ],
+    stamps: [
+      "/Stamps/Modern-Egypt/1.png"
     ]
   }
 ];

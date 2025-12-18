@@ -6,9 +6,10 @@ import { FaceDetectionResult } from '../types';
 interface CameraCaptureProps {
   onCapture: (image: string, faceData: FaceDetectionResult) => void;
   onBack: () => void;
+  isProcessing?: boolean;
 }
 
-export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack }) => {
+export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack, isProcessing = false }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -216,86 +217,82 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack 
       )}
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-6 z-20 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
-        <button
-          onClick={onBack}
-          className="w-12 h-12 flex items-center justify-center bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white/10 transition-colors"
-        >
-          <ChevronLeft size={24} />
-        </button>
+      {!isProcessing && (
+        <div className="absolute top-0 left-0 right-0 p-6 z-20 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent">
+          <button
+            onClick={onBack}
+            className="w-12 h-12 flex items-center justify-center bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-white/10 transition-colors"
+          >
+            <ChevronLeft size={24} />
+          </button>
 
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <img
-            src="/Eagle-Logo.png"
-            alt="Egypt"
-            className="w-24 md:w-36 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-          />
+          {/* Empty spacer for flex alignment */}
+          <div className="w-12" />
         </div>
-
-        {/* Empty spacer for flex alignment */}
-        <div className="w-12" />
-      </div>
+      )}
 
       {/* Footer Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-        {/* Upload Button */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          accept="image/*"
-          className="hidden"
-        />
-        <button
-          onClick={handleFileUpload}
-          disabled={isDetecting || countdown !== null}
-          className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors disabled:opacity-50"
-        >
-          <Upload size={24} />
-        </button>
+      {!isProcessing && (
+        <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+          {/* Upload Button */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            onClick={handleFileUpload}
+            disabled={isDetecting || countdown !== null}
+            className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors disabled:opacity-50"
+          >
+            <Upload size={24} />
+          </button>
 
-        {/* Capture Button */}
-        <button
-          onClick={startCaptureSequence}
-          disabled={isDetecting || countdown !== null}
-          className="group relative w-28 h-28 flex items-center justify-center focus:outline-none"
-        >
-          {/* Idle Pulse Ring - Only visible when idle */}
-          {!isDetecting && countdown === null && (
-            <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium"></div>
-          )}
+          {/* Capture Button */}
+          <button
+            onClick={startCaptureSequence}
+            disabled={isDetecting || countdown !== null}
+            className="group relative w-28 h-28 flex items-center justify-center focus:outline-none"
+          >
+            {/* Idle Pulse Ring - Only visible when idle */}
+            {!isDetecting && countdown === null && (
+              <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium"></div>
+            )}
 
-          {/* Main Button Construction */}
-          <div className={`
+            {/* Main Button Construction */}
+            <div className={`
             relative w-20 h-20 rounded-full border-[4px] flex items-center justify-center transition-all duration-300 z-10 bg-black/20 backdrop-blur-sm
             ${isDetecting
-              ? 'border-slate-500 scale-95'
-              : countdown !== null
-                ? 'border-white scale-100' // Static during countdown
-                : 'border-white group-hover:scale-105 group-active:scale-95' // Interactive idle
-            }
+                ? 'border-slate-500 scale-95'
+                : countdown !== null
+                  ? 'border-white scale-100' // Static during countdown
+                  : 'border-white group-hover:scale-105 group-active:scale-95' // Interactive idle
+              }
           `}>
-            {/* Inner Shutter Circle */}
-            <div className={`
+              {/* Inner Shutter Circle */}
+              <div className={`
                rounded-full transition-all duration-300 shadow-sm
                ${isDetecting
-                ? 'w-2 h-2 bg-slate-500 opacity-0'
-                : 'w-16 h-16 bg-white' // Simple white circle always
-              }
+                  ? 'w-2 h-2 bg-slate-500 opacity-0'
+                  : 'w-16 h-16 bg-white' // Simple white circle always
+                }
              `}></div>
 
-            {/* Spinner Overlay */}
-            {isDetecting && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <RefreshCw className="w-8 h-8 text-white animate-spin" />
-              </div>
-            )}
-          </div>
-        </button>
+              {/* Spinner Overlay */}
+              {isDetecting && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <RefreshCw className="w-8 h-8 text-white animate-spin" />
+                </div>
+              )}
+            </div>
+          </button>
 
-        {/* Placeholder for symmetry */}
-        <div className="w-[56px]"></div>
-      </div>
+          {/* Placeholder for symmetry */}
+          <div className="w-[56px]"></div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,14 +1,6 @@
+import { EraData } from '../types';
 
-import { EraId } from '../types';
-
-const STAMP_MAP: Record<EraId, string> = {
-    [EraId.OLD_EGYPT]: '/Stamps/1.png',
-    [EraId.COPTIC_EGYPT]: '/Stamps/2.png',
-    [EraId.ISLAMIC_EGYPT]: '/Stamps/3.png',
-    [EraId.MODERN_EGYPT]: '/Stamps/4.png',
-};
-
-export const applyEraStamp = (imageSrc: string, eraId: EraId): Promise<string> => {
+export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> => {
     return new Promise((resolve, reject) => {
         const mainImage = new Image();
         const stampImage = new Image();
@@ -40,8 +32,11 @@ export const applyEraStamp = (imageSrc: string, eraId: EraId): Promise<string> =
         logoImage.onload = onAssetLoad;
         logoImage.onerror = onError;
 
+        // Pick a random stamp from the era's stamps array
+        const randomStamp = era.stamps[Math.floor(Math.random() * era.stamps.length)];
+
         mainImage.src = imageSrc;
-        stampImage.src = STAMP_MAP[eraId];
+        stampImage.src = randomStamp;
         logoImage.src = '/Eagle-Logo.png';
 
         const processComposition = () => {
@@ -63,7 +58,7 @@ export const applyEraStamp = (imageSrc: string, eraId: EraId): Promise<string> =
             const padding = canvas.width * 0.05;
 
             // 1. Draw Eagle Logo - Top Left
-            const logoScale = 0.18;
+            const logoScale = 0.22;
             const logoWidth = canvas.width * logoScale;
             const logoHeight = logoWidth * (logoImage.height / logoImage.width);
             ctx.drawImage(logoImage, padding, padding, logoWidth, logoHeight);

@@ -33,7 +33,7 @@ const App: React.FC = () => {
       const resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
 
       // Apply Era Stamp
-      const stampedImage = await applyEraStamp(resultImage, selectedEra.id);
+      const stampedImage = await applyEraStamp(resultImage, selectedEra);
 
       setGeneratedImage(stampedImage);
       setCurrentScreen(AppScreen.RESULT);
@@ -65,7 +65,7 @@ const App: React.FC = () => {
       case AppScreen.CAMERA:
         return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
       case AppScreen.PROCESSING:
-        return <LoadingScreen />;
+        return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} isProcessing={true} />;
       case AppScreen.RESULT:
         return (
           selectedEra && generatedImage ? (
@@ -87,6 +87,7 @@ const App: React.FC = () => {
     <div className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden">
       <main className="flex-grow relative h-full w-full">
         {renderScreen()}
+        {currentScreen === AppScreen.PROCESSING && <LoadingScreen />}
       </main>
     </div>
   );
