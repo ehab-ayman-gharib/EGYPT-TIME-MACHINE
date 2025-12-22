@@ -165,7 +165,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
           playsInline
           className="w-full h-full object-cover"
         >
-          <source src="/isis_test.mp4" type="video/mp4" />
+          <source src="./isis_test.mp4" type="video/mp4" />
         </video>
       </div>
 
@@ -174,7 +174,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
       >
         <img
-          src="/Splash-Screen/IntroFrame.png"
+          src="./Splash-Screen/IntroFrame.png"
           alt=""
           className="w-full h-full object-fill drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
         />
@@ -220,7 +220,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
           {/* Footer Image Underlying everything */}
           <div className="absolute bottom-0 left-0 w-full pointer-events-none -z-10">
             <img
-              src="/Splash-Screen/Splash-Footer.png"
+              src="./Splash-Screen/Splash-Footer.png"
               alt=""
               className="w-full h-auto object-contain"
             />

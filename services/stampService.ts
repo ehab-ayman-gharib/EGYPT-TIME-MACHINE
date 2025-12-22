@@ -37,7 +37,7 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
 
         mainImage.src = imageSrc;
         stampImage.src = randomStamp;
-        logoImage.src = '/Eagle-Logo.png';
+        logoImage.src = './Eagle-Logo.png';
 
         const processComposition = () => {
             const canvas = document.createElement('canvas');
@@ -54,17 +54,17 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             // Draw the main image
             ctx.drawImage(mainImage, 0, 0);
 
-            // Settings for overlays
-            const padding = canvas.width * 0.05;
+            // Settings for overlays (Safety Area for Printing)
+            const padding = canvas.width * 0.08;
 
             // 1. Draw Eagle Logo - Top Left
-            const logoScale = 0.4;
+            const logoScale = 0.3;
             const logoWidth = canvas.width * logoScale;
             const logoHeight = logoWidth * (logoImage.height / logoImage.width);
             ctx.drawImage(logoImage, padding, padding, logoWidth, logoHeight);
 
             // 2. Draw Era Stamp - Bottom Right
-            const stampScale = 0.26;
+            const stampScale = 0.25;
             const stampWidth = canvas.width * stampScale;
             const stampHeight = stampWidth * (stampImage.height / stampImage.width);
             const x = canvas.width - stampWidth - padding;

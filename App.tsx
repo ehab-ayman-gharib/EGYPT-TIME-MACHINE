@@ -6,6 +6,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
 import { generateHistoricalImage } from './services/geminiService';
 import { applyEraStamp } from './services/stampService';
+import { ERAS } from './constants';
 
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);

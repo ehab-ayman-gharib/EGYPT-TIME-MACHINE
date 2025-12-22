@@ -5,7 +5,7 @@ export const ERAS: EraData[] = [
     id: EraId.OLD_EGYPT,
     name: "Old Kingdom",
     description: "Journey back to the time of Pharaohs and Pyramids (c. 2686–2181 BC).",
-    previewImage: "/Old-Egypt-Preview.png", // Fallback placeholder
+    previewImage: "./Old-Egypt-Preview.png", // Fallback placeholder
     promptStyle: "A hyper-realistic, high-resolution portrait-oriented photo of {{GROUP_DESCRIPTION}} standing together, wearing ancient Egyptian pharaonic outfits. Each person’s appearance must accurately match their reference photo, fully preserving identity, natural skin tone, ethnic features, gender, age, proportions, and expression. All individuals are fully dressed in regal pharaonic costumes with elegant gold and deep turquoise details and subtle hieroglyphic patterns. Lighting is warm and cinematic with realistic shadows and natural depth of field. The final image should look like a modern professional photoshoot with a strong pharaonic theme. No added accessories, no distortion, and no cartoon style — everything must appear natural, cohesive, and true to the original individuals. Background: {{BACKGROUND}}",
     singleMalePrompt: "A hyper-realistic, high-resolution, portrait-oriented image of a man transformed into an Ancient Egyptian pharaoh, where the subject’s facial features, skin tone, eye shape, facial structure, and overall identity are fully preserved and unchanged, and only the FACE is preserved while all clothing, accessories, and hairstyle are completely replaced. The subject wears authentic Ancient Egyptian royal attire with mandatory full outfit replacement, including a traditional white or cream linen shendyt (pleated kilt) secured with a gold ceremonial belt, a broad royal wesekh collar crafted from gold, lapis lazuli, turquoise, and carnelian covering the shoulders and upper chest, gold armlets and bracelets on both arms, and a straight ceremonial false beard with dark material and gold accents. The head is adorned with a structured Ancient Egyptian Nemes headdress in gold and deep blue stripes, sculptural and symmetrical in form, inspired by museum statues and relief carvings, resting naturally on the head without visible wrapping folds or fabric knots, clean geometric lines, regal and iconic. Traditional Ancient Egyptian male makeup is applied, including black kohl eyeliner from galena or stibnite defining the eyes, subtle green malachite eyeshadow, very light red ochre tint on lips and cheeks, and a natural matte skin finish, refined and historically accurate with no modern cosmetics. The pharaoh stands upright with a calm, powerful, and authoritative expression, regal posture, and dignified presence. The image is photorealistic with cinematic lighting, realistic linen and gold textures, soft shadows, shallow depth of field, no fantasy elements, no stylization, and no modern fashion influence. Background: {{BACKGROUND}}",
     singleFemalePrompt: "A hyper-realistic, high-resolution, portrait-oriented photo of an Ancient Egyptian queen standing confidently. She wears a flowing white linen kalasiris gown with subtle translucency and refined gold trim that catches the light. She wears an ornate beaded queen-style headdress with intricate patterns, complemented by gold and gemstone bracelets, a broad collar, and ceremonial jewelry. Her makeup is authentic Ancient Egyptian: bold black kohl eyeliner and mascara from galena or stibnite, green malachite eyeshadow, subtle copper-gold highlights, red ochre on lips and cheeks, henna on nails, and naturally glowing, moisturized skin. Her facial features, skin tone, expression, and hair color are fully preserved and unchanged, reflecting her individuality. Background: {{BACKGROUND}}",
@@ -20,16 +20,16 @@ export const ERAS: EraData[] = [
       "the Abu Simbel Temples carved directly into a colossal sandstone cliff, massive seated statues of Ramses II illuminated by dramatic sunlight. The desert landscape is vast and silent, warm tones of sand and stone dominate the scene, subtle atmospheric haze, strong contrast lighting, monumental, powerful, and timeless."
     ],
     stamps: [
-      "/Stamps/Old-Egyptian/1.png",
-      "/Stamps/Old-Egyptian/2.png",
-      "/Stamps/Old-Egyptian/3.png"
+      "./Stamps/Old-Egyptian/1.png",
+      "./Stamps/Old-Egyptian/2.png",
+      "./Stamps/Old-Egyptian/3.png"
     ]
   },
   {
     id: EraId.COPTIC_EGYPT,
     name: "Coptic Era",
     description: "Experience the unique art and spirituality of late antique Egypt (c. 3rd–7th century AD).",
-    previewImage: "/Coptic-Preview.png",
+    previewImage: "./Coptic-Preview.png",
     singleMalePrompt: "A hyper-realistic, high-resolution, portrait-oriented photo of a single Egyptian man from the Coptic era of late antiquity, standing calmly and facing the camera. His facial features, proportions, skin tone, age, expression, and overall identity are fully preserved and unchanged from the reference image.He wears an authentic Coptic linen tunic (kolothos) in natural off-white or beige tones, with historically accurate tapestry-woven clavi and orbiculi featuring subtle geometric or floral motifs in muted red, indigo, or ochre. The fabric appears hand-woven with visible linen texture and natural dyes, fitting modestly and realistically.His grooming is natural and understated: short dark hair, optional trimmed beard, and minimal traditional kohl lightly defining the eyes in a historically accurate manner. No crowns, jewelry, pharaonic elements, or modern accessories.Lighting is warm and soft, with realistic shadows and shallow depth of field, resembling a modern professional portrait while maintaining an authentic ancient Coptic Egyptian atmosphere. Skin texture is natural and lifelike.Background: {{BACKGROUND}}"
     , singleFemalePrompt: "A hyper-realistic, high-resolution, portrait-oriented photo of a single Egyptian woman from the Coptic era of late antiquity, standing gracefully and facing the camera. Her facial features, proportions, skin tone, age, expression, and overall identity are fully preserved and unchanged from the reference image.She wears an authentic Coptic linen tunic in natural linen or soft earth tones, decorated with tapestry-woven clavi and orbiculi featuring delicate geometric or floral patterns in muted red, indigo, or gold-ochre hues. A historically accurate light mantle or veil may be draped naturally over the shoulders or head, consistent with early Christian Egyptian customs. The fabric appears hand-woven, with visible linen texture and natural dyes.Her appearance is modest and natural: minimal makeup, softly defined eyes with subtle traditional kohl, natural lips, and historically appropriate hairstyle partially covered by the veil. No jewelry beyond simple, era-accurate details; no crowns or modern elements.Lighting is warm and soft with realistic shadows and gentle depth of field, creating a refined modern portrait aesthetic grounded in authentic ancient Coptic Egyptian styling. Skin texture is natural and realistic.Background: {{BACKGROUND}}"
     , promptStyle: "A hyper-realistic, high-resolution portrait-oriented photo of {{GROUP_DESCRIPTION}} standing together, wearing traditional Coptic Egyptian clothing from late antiquity. Each person’s appearance must accurately match their reference photo, fully preserving identity, natural skin tone, ethnic features, gender, age, proportions, and expression. All individuals are dressed in authentic Coptic garments, including woven linen tunics (kolothos) with tapestry-woven decorative clavi and orbiculi, geometric and floral motifs, earthy beige and natural linen tones, and hand-embroidered borders. Optional shawls, mantles, or veils may appear depending on gender and era, but must remain historically accurate to early Christian Egypt. Textures should show real linen weave and natural dyes.Lighting is warm and soft with realistic shadows and natural depth of field, creating the look of a modern professional photoshoot with a strong ancient Coptic Egyptian theme. No added accessories outside historical context, no distortion, and no cartoon style — everything must appear natural, cohesive, and true to the original individuals. Background: {{BACKGROUND}}",
@@ -44,8 +44,8 @@ export const ERAS: EraData[] = [
       "Saint Catherine’s Monastery at the foot of Mount Sinai, surrounded by rugged granite mountains and desert terrain. Thick stone walls enclose the ancient complex, with cypress trees, simple courtyards, and a vast open sky above. The light is clear and crisp, the air pure, creating a feeling of isolation, holiness, and timeless monastic life."
     ],
     stamps: [
-      "/Stamps/Coptic/1.png",
-      "/Stamps/Coptic/2.png"
+      "./Stamps/Coptic/1.png",
+      "./Stamps/Coptic/2.png"
     ]
   },
   {
@@ -64,10 +64,10 @@ export const ERAS: EraData[] = [
       "the Qalawun Complex on Al-Muizz Street, featuring richly decorated facades, carved stone details, and elegant arches. Warm lantern light mixes with fading daylight, creating a balanced glow of amber and soft blue tones. The atmosphere is intimate yet grand, historical, and vibrant, with subtle reflections and gentle atmospheric haze."
     ],
     stamps: [
-      "/Stamps/Islamic/1.png",
-      "/Stamps/Islamic/2.png",
-      "/Stamps/Islamic/3.png",
-      "/Stamps/Islamic/4.png"
+      "./Stamps/Islamic/1.png",
+      "./Stamps/Islamic/2.png",
+      "./Stamps/Islamic/3.png",
+      "./Stamps/Islamic/4.png"
     ],
     clothing: {
       men: [
@@ -88,7 +88,7 @@ export const ERAS: EraData[] = [
     id: EraId.MODERN_EGYPT,
     name: "Modern Egypt",
     description: "Experience the vibrant energy and leisure of contemporary Egypt.",
-    previewImage: "/Modern-Preview.png",
+    previewImage: "./Modern-Preview.png",
     singleMalePrompt: "A hyper-realistic, high-resolution, portrait-oriented photo of a single modern Egyptian man enjoying a leisure activity in Egypt. His facial features, proportions, skin tone, age, expression, and overall identity are fully preserved and unchanged from the reference image. He wears stylish, contemporary casual clothing suitable for a sunny day out, such as a light shirt, polo, or casual jacket. The style is modern, relaxed, and photogenic. No ancient costumes. Lighting is natural, bright, and vibrant, reflecting a modern travel photography aesthetic. Background: {{BACKGROUND}}",
     singleFemalePrompt: "A hyper-realistic, high-resolution, portrait-oriented photo of a single modern Egyptian woman enjoying a leisure activity in Egypt. Her facial features, proportions, skin tone, age, expression, and overall identity are fully preserved and unchanged from the reference image. She wears stylish, contemporary casual clothing suitable for a sunny day out, such as a fashionable summer dress, blouse, or casual chic outfit. The style is modern, relaxed, and photogenic. No ancient costumes. Lighting is natural, bright, and vibrant, reflecting a modern travel photography aesthetic. Background: {{BACKGROUND}}",
     promptStyle: "A hyper-realistic, high-resolution portrait-oriented photo of {{GROUP_DESCRIPTION}} enjoying a fun day in Modern Egypt. Each person’s appearance must accurately match their reference photo, fully preserving identity, natural skin tone, ethnic features, gender, age, proportions, and expression. All individuals are dressed in stylish, contemporary casual clothing suitable for tourism or leisure activities in Egypt (e.g., light summer clothes, smart casual, travel wear). No ancient costumes. The vibe is happy, energetic, and modern. Lighting is bright, natural, and cinematic, like a high-end travel magazine feature. Background: {{BACKGROUND}}",
@@ -100,7 +100,7 @@ export const ERAS: EraData[] = [
       "the Great Sphinx of Giza, but from a modern tourist perspective, perhaps with a camel nearby and the pyramids in the background. The sky is bright blue, and the scene is iconic and grand.",
     ],
     stamps: [
-      "/Stamps/Modern-Egypt/1.png"
+      "./Stamps/Modern-Egypt/1.png"
     ]
   }
 ];

@@ -5,7 +5,7 @@ import { FaceDetectionResult } from '../types';
 // ============================================================================
 // MODEL CONFIGURATION
 // ============================================================================
-const LOCAL_MODEL_URL = '/models';
+const LOCAL_MODEL_URL = './models';
 const FALLBACK_MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
 
 let modelLoadPromise: Promise<boolean> | null = null;
