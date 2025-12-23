@@ -54,21 +54,21 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             // Draw the main image
             ctx.drawImage(mainImage, 0, 0);
 
-            // Settings for overlays (Safety Area for Printing)
-            const padding = canvas.width * 0.08;
+            // Settings for overlays
+            const padding = canvas.width * 0.05;
 
             // 1. Draw Eagle Logo - Top Left
-            const logoScale = 0.3;
+            const logoScale = 0.4;
             const logoWidth = canvas.width * logoScale;
             const logoHeight = logoWidth * (logoImage.height / logoImage.width);
             ctx.drawImage(logoImage, padding, padding, logoWidth, logoHeight);
 
-            // 2. Draw Era Stamp - Bottom Right
-            const stampScale = 0.25;
+            // 2. Draw Era Stamp - Bottom Right (with extra vertical lift for safety)
+            const stampScale = 0.26;
             const stampWidth = canvas.width * stampScale;
             const stampHeight = stampWidth * (stampImage.height / stampImage.width);
             const x = canvas.width - stampWidth - padding;
-            const y = canvas.height - stampHeight - padding;
+            const y = canvas.height - stampHeight - (padding * 1.6); // Lifted slightly higher
 
             ctx.drawImage(stampImage, x, y, stampWidth, stampHeight);
 
