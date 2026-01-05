@@ -9,6 +9,31 @@ const getAiClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+const DASHBOARD_API_URL = "https://ai-photobooth-dashboard.vercel.app/api/projects/4c783cca-eb11-4242-bde6-c9d683b0144b/generate";
+
+/**
+ * Increments the generated images count on the dashboard
+ */
+const incrementGeneratedCount = async () => {
+  try {
+    const response = await fetch(DASHBOARD_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (!response.ok) {
+      console.warn(`[Dashboard] Failed to increment count: ${response.status} ${response.statusText}`);
+    } else {
+      console.log('[Dashboard] Successfully incremented generation count');
+    }
+  } catch (error) {
+    console.error('[Dashboard] Error calling increment API:', error);
+  }
+};
+
 export const generateHistoricalImage = async (
   base64Image: string,
   era: EraData,
@@ -158,6 +183,9 @@ export const generateHistoricalImage = async (
 
       for (const part of candidate.content?.parts || []) {
         if (part.inlineData) {
+          // Increment dashboard count after successful generation
+          incrementGeneratedCount();
+
           return `data:image/jpeg;base64,${part.inlineData.data}`;
         }
       }
