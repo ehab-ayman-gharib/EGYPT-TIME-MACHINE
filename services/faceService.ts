@@ -169,7 +169,7 @@ export const loadFaceApiModels = async (): Promise<boolean> => {
 
 export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement, isLoaded: boolean): Promise<FaceDetectionResult> => {
     // Default safe fallback
-    const fallback: FaceDetectionResult = { maleCount: 0, femaleCount: 1, totalPeople: 1 };
+    const fallback: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
 
     if (!isLoaded) return fallback;
 
@@ -208,45 +208,24 @@ export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElem
         // Execute
         const results = await task;
 
-        if (!results || results.length === 0) {
-            return { maleCount: 0, femaleCount: 0, totalPeople: 1 };
-        }
-
         let maleCount = 0;
         let femaleCount = 0;
-
-        console.log('👥 Face Detection Results:');
-        console.log(`   Total faces detected: ${results.length}`);
+        let childCount = 0;
 
         results.forEach((res: any, index: number) => {
             const gender = res.gender || 'unknown';
-            const confidence = res.genderProbability ? (res.genderProbability * 100).toFixed(1) : 'N/A';
-            const age = res.age ? Math.round(res.age) : 'N/A';
+            const age = res.age ? Math.round(res.age) : 30; // Default to adult if unknown
 
-            console.log(`   Face ${index + 1}: ${gender} (confidence: ${confidence}%), age: ~${age}`);
-
-            if (gender === 'male') maleCount++;
-            else if (gender === 'female') femaleCount++;
-            else femaleCount++; // Default unknown to female
+            if (age < 15) {
+                childCount++;
+            } else {
+                if (gender === 'male') maleCount++;
+                else femaleCount++; // Default to female
+            }
         });
 
-        console.log(`📊 Summary: ${maleCount} male(s), ${femaleCount} female(s)`);
-
-        // Heuristic: If we found faces but gender logic failed (e.g. model missing), assume mixed or default
-        if (maleCount === 0 && femaleCount === 0 && results.length > 0) {
-            femaleCount = results.length;
-            console.warn('⚠️ Gender detection failed, defaulting all faces to female');
-        }
-
-        return { maleCount, femaleCount, totalPeople: results.length };
-
+        return { maleCount, femaleCount, childCount, totalPeople: results.length };
     } catch (error: any) {
-        // SWALLOW "TinyYolov2" ERRORS
-        if (error.message && (error.message.includes("TinyYolov2") || error.message.includes("load model"))) {
-            console.warn("Inference skipped: Model not fully ready.");
-        } else {
-            console.error("Face detection error:", error);
-        }
-        return fallback;
+        return { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
     }
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { EraData, EraId } from '../types';
 import { ERAS } from '../constants';
+import { Camera } from 'lucide-react';
 
 interface SplashScreenProps {
   onStart: () => void;
@@ -193,14 +194,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                 className="flex flex-col items-center gap-2 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 onClick={() => handleEraClick(era)}
               >
-                {/* Circular image with golden border */}
-                <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full border-2 border-yellow-500/60 p-1 overflow-hidden backdrop-blur-sm bg-black/20 group-hover:border-yellow-400 transition-colors shadow-[0_0_15px_rgba(234,179,8,0.3)] group-hover:shadow-[0_0_20px_rgba(234,179,8,0.5)]">
-                  <div className="w-full h-full rounded-full overflow-hidden">
-                    <img
-                      src={era.previewImage}
-                      alt={era.name}
-                      className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
-                    />
+                {/* Circular image or icon with golden border */}
+                <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full border-2 border-yellow-500/60 bg-black/20 group-hover:border-yellow-400 transition-all duration-300 shadow-[0_0_15px_rgba(234,179,8,0.3)] group-hover:shadow-[0_0_20px_rgba(234,179,8,0.5)]">
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                    {era.id === EraId.MODERN_EGYPT ? (
+                      <Camera className="w-10 h-10 md:w-12 md:h-12 text-yellow-500/80 group-hover:text-yellow-400 group-hover:scale-110 transition-all duration-500" />
+                    ) : (
+                      <img
+                        src={era.previewImage}
+                        alt={era.name}
+                        className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                      />
+                    )}
                   </div>
                   {/* Subtle inner glow */}
                   <div className="absolute inset-0 rounded-full shadow-[inset_0_0_15px_rgba(0,0,0,0.6)] pointer-events-none" />
@@ -211,7 +216,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                   {era.id === EraId.OLD_EGYPT ? "OLD EGYPTIAN" :
                     era.id === EraId.ISLAMIC_EGYPT ? "ISLAMIC" :
                       era.id === EraId.COPTIC_EGYPT ? "COPTIC ERA" :
-                        "MODERN CAIRO"}
+                        "SNAP A MEMORY"}
                 </span>
               </div>
             ))}

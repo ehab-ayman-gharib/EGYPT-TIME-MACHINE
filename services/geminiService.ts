@@ -1,5 +1,6 @@
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { EraData, FaceDetectionResult } from '../types';
+import { SHARED_PROMPT_INSTRUCTIONS, IDENTITY_PRESERVATION_GUIDE } from '../constants';
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -40,96 +41,57 @@ export const generateHistoricalImage = async (
   faceData: FaceDetectionResult
 ): Promise<string> => {
   const ai = getAiClient();
-
-  // Clean base64 string
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
-  // Construct prompt strictly emphasizing identity preservation
-  // Calculate detailed group description
-  const parts = [];
-  if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} male${faceData.maleCount > 1 ? 's' : ''}`);
-  if (faceData.femaleCount > 0) parts.push(`${faceData.femaleCount} female${faceData.femaleCount > 1 ? 's' : ''}`);
-  let groupDescription = parts.join(' and ');
-  if (!groupDescription) groupDescription = "the people";
-
-  // Determine the base prompt style
-  let basePromptStyle = era.promptStyle;
-
-  // specialized prompts for single subjects
+  // 1. Calculate Group Description
+  let subjectDescription = "";
   if (faceData.totalPeople === 1) {
-    if (faceData.maleCount === 1 && era.singleMalePrompt) {
-      basePromptStyle = era.singleMalePrompt;
-    } else if (faceData.femaleCount === 1 && era.singleFemalePrompt) {
-      basePromptStyle = era.singleFemalePrompt;
-    }
-  }
-
-  // Select random background
-  let selectedBackground = "";
-  if (era.backgrounds && era.backgrounds.length > 0) {
-    const randomIndex = Math.floor(Math.random() * era.backgrounds.length);
-    selectedBackground = era.backgrounds[randomIndex];
-  }
-
-  // Select random clothing if provided
-  let selectedClothing = "";
-  if (era.clothing) {
-    if (Array.isArray(era.clothing)) {
-      if (era.clothing.length > 0) {
-        const randomIndex = Math.floor(Math.random() * era.clothing.length);
-        selectedClothing = era.clothing[randomIndex];
-      }
-    } else {
-      // It's the { men: string[], women: string[] } object
-      let pool: string[] = [];
-      if (faceData.totalPeople === 1) {
-        if (faceData.maleCount === 1) {
-          pool = era.clothing.men;
-        } else if (faceData.femaleCount === 1) {
-          pool = era.clothing.women;
-        }
-      } else {
-        // For groups, combine them or pick one at random
-        // Simplest: pick from either list at random
-        const useMen = Math.random() > 0.5;
-        pool = useMen ? era.clothing.men : era.clothing.women;
-      }
-
-      if (pool.length > 0) {
-        const randomIndex = Math.floor(Math.random() * pool.length);
-        selectedClothing = pool[randomIndex];
-      }
-    }
-  }
-
-  // Inject into prompt style
-  let finalPromptStyle = basePromptStyle.replace('{{GROUP_DESCRIPTION}}', groupDescription);
-
-  if (selectedBackground) {
-    finalPromptStyle = finalPromptStyle.replace('{{BACKGROUND}}', selectedBackground);
-  }
-
-  if (selectedClothing) {
-    // Replace all occurrences of {{CLOTHING}}
-    finalPromptStyle = finalPromptStyle.replaceAll('{{CLOTHING}}', selectedClothing);
+    if (faceData.childCount > 0) subjectDescription = "a young child";
+    else if (faceData.maleCount > 1 || faceData.maleCount === 1) subjectDescription = "a man";
+    else if (faceData.femaleCount > 0) subjectDescription = "a woman";
+    else subjectDescription = "a person"; // Fallback
   } else {
-    // If no clothing array provided but placeholder exists, remove it
-    finalPromptStyle = finalPromptStyle.replaceAll('{{CLOTHING}}', "");
+    const parts = [];
+    if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} ${faceData.maleCount > 1 ? 'men' : 'man'}`);
+    if (faceData.femaleCount > 0) parts.push(`${faceData.femaleCount} ${faceData.femaleCount > 1 ? 'women' : 'woman'}`);
+    if (faceData.childCount > 0) parts.push(`${faceData.childCount} ${faceData.childCount > 1 ? 'children' : 'child'}`);
+
+    if (parts.length === 0) {
+      subjectDescription = `a group of ${faceData.totalPeople} people`;
+    } else {
+      subjectDescription = "a group of " + parts.join(', ').replace(/, ([^,]*)$/, ' and $1');
+    }
   }
 
-  // A strict prompt to guide the model
+  // 2. Select Scene and Clothing
+  const sceneIdx = Math.floor(Math.random() * era.scenery.length);
+  const scene = era.scenery[sceneIdx];
+  console.log(`[Prompt Gen] Selected scene #${sceneIdx} for era ${era.id}`);
+  const clothingParts: string[] = [];
+
+  if (faceData.maleCount > 0) {
+    clothingParts.push(`the ${faceData.maleCount > 1 ? 'men' : 'man'} wearing ${scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)]}`);
+  }
+  if (faceData.femaleCount > 0) {
+    clothingParts.push(`the ${faceData.femaleCount > 1 ? 'women' : 'woman'} wearing ${scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)]}`);
+  }
+  if (faceData.childCount > 0) {
+    // If we have children, they can wear items from either list, or simplified versions
+    // For now, let's pick from gender lists or just a general historical child description
+    clothingParts.push(`the ${faceData.childCount > 1 ? 'children' : 'child'} wearing historically accurate ${era.name} child attire`);
+  }
+
+  const clothingDescription = clothingParts.join(", ");
+
+  // 3. Construct Unified Prompt
   const prompt = `
-  You are an expert VFX artist.
+  ${SHARED_PROMPT_INSTRUCTIONS}
   
-  INPUT: Photo of ${groupDescription}.
-  TASK: Change their clothing and style to match the ${era.name} (${era.description}).
-  style: ${finalPromptStyle}
+  INPUT: A photo of ${subjectDescription}.
+  TASK: Place them in ${scene.prompt} during the ${era.name} era.
+  CLOTHING: ${clothingDescription}.
   
-  REQUIREMENTS:
-  - Keep the original face and identity visible and recognizable.
-  - Change ONLY clothing, hair, and accessories to being historically accurate to ${era.name}.
-  - Place in a ${era.name} environment.
-  - Photorealistic, high quality, 9:16 portrait.
+  ${IDENTITY_PRESERVATION_GUIDE}
   `;
 
   console.log("------------------- GENERATED PROMPT -------------------");
@@ -146,14 +108,14 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    // @ts-ignore
+    temperature: 1, // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"
     },
     safetySettings: safetySettings
   };
 
-  //console.log("Gemini Request Config:", JSON.stringify(requestConfig, null, 2));
+  console.log("Gemini Request Config:", JSON.stringify(requestConfig, null, 2));
 
   try {
     // Using gemini-2.5-flash-image for transformation tasks

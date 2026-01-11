@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppScreen, EraData, FaceDetectionResult } from './types';
+import { AppScreen, EraData, FaceDetectionResult, EraId } from './types';
 import { SplashScreen } from './components/SplashScreen';
 import { CameraCapture } from './components/CameraCapture';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -13,6 +13,7 @@ const App: React.FC = () => {
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
+  const [sessionKey, setSessionKey] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
 
   const handleStart = () => {
@@ -31,16 +32,26 @@ const App: React.FC = () => {
     setCurrentScreen(AppScreen.PROCESSING);
 
     try {
-      const resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+      let resultImage: string;
 
-      // Apply Era Stamp
+      if (selectedEra.id === EraId.MODERN_EGYPT) {
+        // "Snap a Memory" mode: Skip AI generation, just use the original photo
+        resultImage = imageSrc;
+        // Small artificial delay for consistent UX
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        // Historical eras: Run Gemini AI transformation
+        resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+      }
+
+      // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
       const stampedImage = await applyEraStamp(resultImage, selectedEra);
 
       setGeneratedImage(stampedImage);
       setCurrentScreen(AppScreen.RESULT);
     } catch (error) {
-      console.error("Generation failed", error);
-      alert("Sorry, the time machine malfunctioned. Please try again.");
+      console.error("Processing failed", error);
+      alert("Sorry, there was an issue processing your photo. Please try again.");
       setCurrentScreen(AppScreen.CAMERA);
     }
   };
@@ -49,6 +60,7 @@ const App: React.FC = () => {
     setGeneratedImage(null);
     setSelectedEra(null);
     setFaceDetectionResult(null);
+    setSessionKey(prev => prev + 1);
     setCurrentScreen(AppScreen.ERA_SELECTION);
   };
 
@@ -86,7 +98,7 @@ const App: React.FC = () => {
 
   return (
     <div className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden">
-      <main className="flex-grow relative h-full w-full">
+      <main className="flex-grow relative h-full w-full" key={sessionKey}>
         {renderScreen()}
         {currentScreen === AppScreen.PROCESSING && <LoadingScreen />}
       </main>

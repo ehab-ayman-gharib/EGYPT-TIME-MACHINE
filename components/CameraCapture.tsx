@@ -53,7 +53,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack,
   }, []);
 
   const handleCaptureImmediate = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current || !canvasRef.current || isDetecting) return;
     setIsDetecting(true);
 
     const video = videoRef.current;
@@ -116,6 +116,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack,
         onCapture(imageData, faceData);
       }
       setIsDetecting(false);
+      if (event.target) event.target.value = ''; // Reset input
     };
   };
 

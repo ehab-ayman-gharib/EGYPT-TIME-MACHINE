@@ -13,24 +13,24 @@ export enum EraId {
   MODERN_EGYPT = 'MODERN_EGYPT',
 }
 
+export interface Scenery {
+  prompt: string;
+  maleClothingIds: string[];
+  femaleClothingIds: string[];
+}
+
 export interface EraData {
   id: EraId;
   name: string;
   description: string;
   previewImage: string;
-  promptStyle: string;
-  singleMalePrompt?: string;
-  singleFemalePrompt?: string;
-  backgrounds: string[];
+  scenery: Scenery[];
   stamps: string[];
-  clothing?: string[] | {
-    men: string[];
-    women: string[];
-  };
 }
 
 export interface FaceDetectionResult {
   maleCount: number;
   femaleCount: number;
+  childCount: number;
   totalPeople: number;
 }

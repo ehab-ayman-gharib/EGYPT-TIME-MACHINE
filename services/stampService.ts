@@ -1,4 +1,4 @@
-import { EraData } from '../types';
+import { EraData, EraId } from '../types';
 
 export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -10,8 +10,9 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
         stampImage.crossOrigin = "anonymous";
         logoImage.crossOrigin = "anonymous";
 
+        const hasStamp = era.id !== EraId.MODERN_EGYPT && era.stamps && era.stamps.length > 0;
         let assetsLoaded = 0;
-        const totalAssets = 3;
+        const totalAssets = hasStamp ? 3 : 2;
 
         const onAssetLoad = () => {
             assetsLoaded++;
@@ -27,17 +28,18 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
 
         mainImage.onload = onAssetLoad;
         mainImage.onerror = onError;
-        stampImage.onload = onAssetLoad;
-        stampImage.onerror = onError;
         logoImage.onload = onAssetLoad;
         logoImage.onerror = onError;
 
-        // Pick a random stamp from the era's stamps array
-        const randomStamp = era.stamps[Math.floor(Math.random() * era.stamps.length)];
-
         mainImage.src = imageSrc;
-        stampImage.src = randomStamp;
         logoImage.src = './Eagle-Logo.png';
+
+        if (hasStamp) {
+            stampImage.onload = onAssetLoad;
+            stampImage.onerror = onError;
+            const randomStamp = era.stamps[Math.floor(Math.random() * era.stamps.length)];
+            stampImage.src = randomStamp;
+        }
 
         const processComposition = () => {
             const canvas = document.createElement('canvas');
@@ -64,13 +66,15 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             ctx.drawImage(logoImage, padding, padding, logoWidth, logoHeight);
 
             // 2. Draw Era Stamp - Bottom Right (with extra vertical lift for safety)
-            const stampScale = 0.26;
-            const stampWidth = canvas.width * stampScale;
-            const stampHeight = stampWidth * (stampImage.height / stampImage.width);
-            const x = canvas.width - stampWidth - padding;
-            const y = canvas.height - stampHeight - (padding * 1.6); // Lifted slightly higher
+            if (hasStamp) {
+                const stampScale = 0.26;
+                const stampWidth = canvas.width * stampScale;
+                const stampHeight = stampWidth * (stampImage.height / stampImage.width);
+                const x = canvas.width - stampWidth - padding;
+                const y = canvas.height - stampHeight - (padding * 1.6); // Lifted slightly higher
 
-            ctx.drawImage(stampImage, x, y, stampWidth, stampHeight);
+                ctx.drawImage(stampImage, x, y, stampWidth, stampHeight);
+            }
 
             resolve(canvas.toDataURL('image/jpeg', 0.95));
         };
