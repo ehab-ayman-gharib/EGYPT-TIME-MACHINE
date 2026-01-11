@@ -150,8 +150,25 @@ export const ERAS: EraData[] = [
     scenery: [
       {
         // 1. DEIR MAR GIRGIS (Church of St. George)
-        // Focus: The unique ROUND structure on the ROMAN TOWER base. Red brick & stone texture.
-        prompt: "A wide-angle landscape photograph capturing the full circular form of the Church of St. George (Mar Girgis) in Old Cairo. The subject stands on the ground level pavement. The church is visibly built upon the massive, ancient stone foundations of a round Roman fortress tower. The upper structure is a mix of weathered red brick and intricate stone patterning, capped by a dome. The entrance is integrated into the curve. The atmosphere is ancient and imposing.",
+        // Ref: 'dsc05584.webp' - The Round Church.
+        // Focus: Circular Structure, Red Brick, Roman Tower Base.
+        prompt: "A wide-angle landscape photograph capturing the unique circular architecture of the Church of St. George (Mar Girgis). The subject stands on the pavement. The church is a massive Rotunda built directly on top of an ancient Roman fortress tower. The walls feature distinct bands of red brick and limestone. The background includes the domed roof and Coptic crosses. The atmosphere is ancient, geometric, and imposing.",
+        maleClothingIds: [
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees (Reference: 'Green Tunic'). It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. He holds a leather purse. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood (qalansuwa) with cross stitching. Footwear: Woven palm-fiber sandals."
+        ],
+        femaleClothingIds: [
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns (Reference: 'Beige Tunic'). Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool (Reference: 'Ochre Tunic'). She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
+        ]
+      },
+      {
+        // 2. THE HANGING CHURCH (Al-Muallaqa) - Courtyard
+        // Ref: 'chronolens-COPTIC_EGYPT-1768150558479.jpg' (Courtyard view).
+        // Focus: Twin Towers, Steps, Palm Trees, "Hanging" elevation.
+        prompt: "A wide-angle environmental photograph in the entrance courtyard of the Hanging Church. The subject stands at the foot of the grand limestone staircase. Behind them, the facade rises high, built over the Roman Gatehouse. The twin white bell towers are visible against the sky, framed by date palms. The walls feature carved Coptic inscriptions and geometric stone rosettes. Historic and sun-drenched.",
         maleClothingIds: [
           "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
           "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
@@ -164,9 +181,10 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // 2. THE HANGING CHURCH (Al-Muallaqa)
-        // Focus: Built OVER the gatehouse, ancient facade texture.
-        prompt: "A wide-angle landscape photograph in the forecourt of the Hanging Church. The subject stands on the flagstones. Behind them, the facade of the church rises, built directly over the ancient Roman gatehouse of Babylon Fortress (the 'hanging' effect). The facade features twin bell towers, dark wooden lattice screens, and ancient Coptic inscriptions weathered into the stone. Palm trees frame the historic structure.",
+        // 3. DEIR SAM3AN KHARAZ (St. Simon the Tanner)
+        // Ref: 'zabaleen-church-1[6].jpg' & 'images (3).jpg'.
+        // Focus: Carved Mountain, Amphitheater, Rock Reliefs.
+        prompt: "A monumental wide-angle photograph at the Cave Church of St. Simon. The subject stands in the vast open-air amphitheater carved into the Mokattam mountain. The sheer rock cliff face creates a natural roof overhang. The stone walls behind are covered in large, hand-carved reliefs of Coptic saints and biblical scenes chiseled directly into the mountain. The scale is epic and rugged.",
         maleClothingIds: [
           "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
           "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
@@ -179,9 +197,9 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // 3. DEIR SAM3AN KHARAZ (St. Simon the Tanner Cave Church)
-        // Focus: Massive cave mouth, carvings inside rock, amphitheater scale.
-        prompt: "An ultra-wide landscape photograph inside the massive open-air Cave Church of St. Simon in Mokattam. The subject stands on the rock floor. The entire enormous natural cave mouth frames the scene. Inside, huge reliefs of Coptic saints and biblical scenes are carved directly into the sheer cliff walls. Tiers of stone seating curve around the natural amphitheater. The scale is overwhelming and rugged.",
+        // 4. THE COPTIC MUSEUM (Interior/Courtyard)
+        // Focus: Mashrabiya, Frescoes, Stone Niches.
+        prompt: "A medium-shot portrait in a historic Coptic courtyard. The subject stands on stone pavers. The walls behind them are a masterpiece of Coptic art: elaborate wooden Mashrabiya screens, limestone arches, and niches containing faded frescoes of saints with golden halos. Stone columns with Corinthian capitals line the walkway. The atmosphere is artistic and preserved.",
         maleClothingIds: [
           "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
           "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
@@ -194,9 +212,10 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // 4. RELIGIOUS COMPLEX ALLEYS (Old Cairo)
-        // Focus: Narrow, deep, textured stone walls, ancient feeling.
-        prompt: "A wide-angle environmental photograph within the deep, narrow alleyways of the Old Cairo Religious Complex. The subject stands between towering, rough-hewn ancient limestone walls that show centuries of wear. Stone arches connect the walls overhead. Wooden doors with heavy iron studs and faded carved Coptic geometric symbols are set into the walls. The light is diffused, creating a deep, ancient atmosphere.",
+        // 5. ANCIENT MONASTERY COMPLEX (Like St. Paul/Anthony)
+        // Ref: '5eff48...avif'.
+        // Focus: Desert Fortress, Domes, Mud-brick.
+        prompt: "A wide-angle landscape photograph of a fortified desert monastery. The subject stands on the desert sand. Behind them, the monastery rises like a fortress: high mud-brick walls, clusters of beige domes, and a bell tower, all built against a dramatic desert cliff. The architecture is organic and ancient. Palm trees cluster near the entrance.",
         maleClothingIds: [
           "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
           "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
@@ -209,24 +228,9 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // 5. THE COPTIC MUSEUM (Garden/Facade)
-        // Focus: Mix of stone, wood mashrabiya, peaceful historic courtyard.
-        prompt: "A wide-angle landscape photograph in the historic garden courtyard of the Coptic Museum. The subject stands on stone pavers. The main facade is a detailed mix of weathered limestone arches, intricate dark wooden Mashrabiya balconies, and inlaid stone patterns with Coptic motifs. Ancient stone columns and a dry fountain are in the foreground. It feels like a preserved ancient estate.",
-        maleClothingIds: [
-          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
-          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
-          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
-        ],
-        femaleClothingIds: [
-          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
-          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
-          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
-        ]
-      },
-      {
-        // 6. SAINT CATHERINE’S MONASTERY (Sinai)
-        // Focus: High fortress walls, granite mountains, isolation.
-        prompt: "A wide-angle landscape photograph outside the massive fortress walls of Saint Catherine’s Monastery in Sinai. The subject stands on the rugged desert ground. The granite walls are incredibly thick and high. Behind them, jagged, dark red granite mountains rise steeply against the sky. A few cypress trees are visible inside the walls. The scene is isolated, rugged, and ancient.",
+        // 6. SAINT CATHERINE’S MONASTERY (Sant Catrin)
+        // Focus: Granite Mountains, Fortress Walls, Cypress.
+        prompt: "A dramatic wide-angle landscape photograph at Saint Catherine’s Monastery. The subject stands on the rugged rocky ground. The background is dominated by the immense, jagged red granite mountains of Sinai. The high, thick stone fortress walls of the monastery protect green cypress trees inside. The light is sharp, clear, and high-altitude.",
         maleClothingIds: [
           "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
           "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
