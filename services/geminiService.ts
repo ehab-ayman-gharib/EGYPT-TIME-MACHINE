@@ -45,11 +45,33 @@ export const generateHistoricalImage = async (
 
   // 1. Calculate Group Description
   let subjectDescription = "";
+  let includeCharacter = false;
+
+  const COMPANIONS = [
+    {
+      name: "QUEEN NEFERTITI",
+      description: "the legendary Queen Nefertiti, recognizable by her iconic tall, flat-topped blue cap crown (Nemes), a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen sheath gown. She should have her distinct regal facial features and traditional Egyptian kohl eye makeup."
+    },
+    {
+      name: "PHARAOH THUTMOSE III",
+      description: "the great warrior Pharaoh Thutmose III, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra, a broad gold chest collar, and a stiff pleated royal kilt with a golden belt. He stands with a powerful and majestic presence."
+    },
+    {
+      name: "THE GODDESS ISIS",
+      description: "the divine Goddess Isis, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting sheath dress adorned with gold beads and carries a golden Ankh."
+    }
+  ];
+
   if (faceData.totalPeople === 1) {
     if (faceData.childCount > 0) subjectDescription = "a young child";
-    else if (faceData.maleCount > 1 || faceData.maleCount === 1) subjectDescription = "a man";
+    else if (faceData.maleCount >= 1) subjectDescription = "a man";
     else if (faceData.femaleCount > 0) subjectDescription = "a woman";
-    else subjectDescription = "a person"; // Fallback
+    else subjectDescription = "a person";
+
+    // Special logic for OLD_EGYPT: Prompt for a companion character (text-only bridge)
+    if (era.id === 'OLD_EGYPT') {
+      includeCharacter = true;
+    }
   } else {
     const parts = [];
     if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} ${faceData.maleCount > 1 ? 'men' : 'man'}`);
@@ -64,9 +86,27 @@ export const generateHistoricalImage = async (
   }
 
   // 2. Select Scene and Clothing
-  const sceneIdx = Math.floor(Math.random() * era.scenery.length);
+  let sceneIdx = 0;
+  const lastScenesKey = 'extra_last_scenes';
+  const lastScenes = JSON.parse(localStorage.getItem(lastScenesKey) || '{}');
+  const lastIdx = lastScenes[era.id];
+
+  if (era.scenery.length > 1) {
+    // Try up to 10 times to get a different scene
+    for (let i = 0; i < 10; i++) {
+      sceneIdx = Math.floor(Math.random() * era.scenery.length);
+      if (sceneIdx !== lastIdx) break;
+    }
+  } else {
+    sceneIdx = 0;
+  }
+
+  // Save selected scene to prevent repetition in next session
+  lastScenes[era.id] = sceneIdx;
+  localStorage.setItem(lastScenesKey, JSON.stringify(lastScenes));
+
   const scene = era.scenery[sceneIdx];
-  console.log(`[Prompt Gen] Selected scene #${sceneIdx} for era ${era.id}`);
+  console.log(`[Prompt Gen] Selected non-repeating scene #${sceneIdx} for era ${era.id} (last was ${lastIdx})`);
   const clothingParts: string[] = [];
 
   if (faceData.maleCount > 0) {
@@ -76,23 +116,42 @@ export const generateHistoricalImage = async (
     clothingParts.push(`the ${faceData.femaleCount > 1 ? 'women' : 'woman'} wearing ${scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)]}`);
   }
   if (faceData.childCount > 0) {
-    // If we have children, they can wear items from either list, or simplified versions
-    // For now, let's pick from gender lists or just a general historical child description
     clothingParts.push(`the ${faceData.childCount > 1 ? 'children' : 'child'} wearing historically accurate ${era.name} child attire`);
   }
 
   const clothingDescription = clothingParts.join(", ");
 
   // 3. Construct Unified Prompt
-  const prompt = `
-  ${SHARED_PROMPT_INSTRUCTIONS}
-  
-  INPUT: A photo of ${subjectDescription}.
-  TASK: Place them in ${scene.prompt} during the ${era.name} era.
-  CLOTHING: ${clothingDescription}.
-  
-  ${IDENTITY_PRESERVATION_GUIDE}
-  `;
+  let prompt = "";
+  if (includeCharacter) {
+    const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
+    prompt = `
+    A magnificent cinematic duo portrait set in ${scene.prompt}. 
+    The photograph features two individuals standing side-by-side in a shared moment:
+    
+    1. THE USER: A person from the provided photo, transformed into a historical figure of ${era.name} Egypt wearing ${clothingDescription}. Their facial features and identity MUST be perfectly preserved.
+    2. THE COMPANION: ${companion.description}
+    
+    COMPOSITION:
+    They should be standing gracefully side-by-side or shoulder-to-shoulder, integrated into the same physical space with cohesive lighting and shadows. This should look like a professional, high-quality historical photograph.
+    Absolutely no modern technology, cameras, or mobile phones.
+    
+    ${IDENTITY_PRESERVATION_GUIDE}
+    `;
+  } else {
+    // Normal Group Photo or No Character
+    prompt = `
+    ${SHARED_PROMPT_INSTRUCTIONS}
+    
+    INPUT: A photo of ${subjectDescription}.
+    TASK: Place them into ${scene.prompt} during the ${era.name} era.
+    CLOTHING: ${clothingDescription}. 
+    
+    STYLE: Professional cinematic photography, 9:16 portrait.
+    
+    ${IDENTITY_PRESERVATION_GUIDE}
+    `;
+  }
 
   console.log("------------------- GENERATED PROMPT -------------------");
   console.log(prompt);
@@ -108,7 +167,8 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    temperature: 1, // @ts-ignore
+    temperature: 1,
+    // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"
     },
@@ -118,21 +178,23 @@ export const generateHistoricalImage = async (
   console.log("Gemini Request Config:", JSON.stringify(requestConfig, null, 2));
 
   try {
-    // Using gemini-2.5-flash-image for transformation tasks
+    // 4. Send to Gemini
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       config: requestConfig,
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              mimeType: 'image/jpeg',
-              data: cleanBase64
-            }
-          },
-          { text: prompt }
-        ]
-      }
+      contents: [
+        {
+          parts: [
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: cleanBase64
+              }
+            },
+            { text: prompt }
+          ]
+        }
+      ]
     });
 
     // Extract image from response

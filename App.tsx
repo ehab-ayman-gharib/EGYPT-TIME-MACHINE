@@ -31,28 +31,45 @@ const App: React.FC = () => {
     setFaceDetectionResult(faceData);
     setCurrentScreen(AppScreen.PROCESSING);
 
-    try {
-      let resultImage: string;
+    let attempts = 0;
+    const maxAttempts = 3;
 
-      if (selectedEra.id === EraId.MODERN_EGYPT) {
-        // "Snap a Memory" mode: Skip AI generation, just use the original photo
-        resultImage = imageSrc;
-        // Small artificial delay for consistent UX
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } else {
-        // Historical eras: Run Gemini AI transformation
-        resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        console.log(`[Processing] Attempt ${attempts} / ${maxAttempts}...`);
+
+        let resultImage: string;
+
+        if (selectedEra.id === EraId.MODERN_EGYPT) {
+          // "Snap a Memory" mode: Skip AI generation, just use the original photo
+          resultImage = imageSrc;
+          // Small artificial delay for consistent UX
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          // Historical eras: Run Gemini AI transformation
+          resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+        }
+
+        // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
+        const stampedImage = await applyEraStamp(resultImage, selectedEra);
+
+        setGeneratedImage(stampedImage);
+        setCurrentScreen(AppScreen.RESULT);
+        return; // Success! Exit the function
+      } catch (error) {
+        console.error(`Attempt ${attempts} failed:`, error);
+        if (attempts >= maxAttempts) {
+          // All retries failed
+          console.error("All processing attempts failed. Resetting to splash screen.");
+          // Reset to splash screen like the New Adventure button
+          handleRestart();
+          setCurrentScreen(AppScreen.SPLASH);
+        } else {
+          // Wait a bit before retrying (optional delay)
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
-
-      // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
-      const stampedImage = await applyEraStamp(resultImage, selectedEra);
-
-      setGeneratedImage(stampedImage);
-      setCurrentScreen(AppScreen.RESULT);
-    } catch (error) {
-      console.error("Processing failed", error);
-      alert("Sorry, there was an issue processing your photo. Please try again.");
-      setCurrentScreen(AppScreen.CAMERA);
     }
   };
 

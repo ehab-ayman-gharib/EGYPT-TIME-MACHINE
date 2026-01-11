@@ -26,6 +26,7 @@ export interface EraData {
   previewImage: string;
   scenery: Scenery[];
   stamps: string[];
+  characters?: string[];
 }
 
 export interface FaceDetectionResult {

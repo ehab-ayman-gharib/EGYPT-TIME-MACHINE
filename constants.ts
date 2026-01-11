@@ -16,8 +16,8 @@ export const ERAS: EraData[] = [
     previewImage: "./Old-Egypt-Preview.png",
     scenery: [
       {
-        // Reference: Philae Royal Quay
-        // Fix: Wide-angle, Royal Bark.
+        // 1. PHILAE TEMPLE QUAY
+        // Wide-angle, Royal Bark, Granite Statues.
         prompt: "A wide-angle full-body environmental portrait on the stone quay of the Philae Temple. The subject stands centrally, allowing a view of the surroundings. To their side rests a magnificent gilded Royal Bark (ritual boat) on a sledge. The background features towering temple Pylons covered in distinct Egyptian reliefs and the wide blue Nile. Bright, expansive, and regal.",
         maleClothingIds: [
           "Pharaoh's Regalia: A bare chest adorned with a massive gold Wesekh collar (lapis/turquoise), heavy gold armbands, and a stiff pleated white Shendyt kilt with a gold central belt panel. Headwear: The striped Nemes headdress with Uraeus (cobra). Footwear: Intricate gold leather royal sandals.",
@@ -26,28 +26,28 @@ export const ERAS: EraData[] = [
         ],
         femaleClothingIds: [
           "Great Royal Wife: A tight-fitting, ankle-length white linen Kalasiris (sheath). Worn with the elaborate gold Vulture Headdress and a massive gold Usekh collar. Footwear: Gold sandals.",
-          "Royal Princess: A sheath dress of the finest white linen, adorned with a wide collar of gold and turquoise faience. Worn with a heavy Black Tripartite Wig fused with gold rings. Footwear: Beaded leather sandals.",
+          "Royal Princess: A sheath dress of the finest white linen, adorned with a wide collar of gold and turquoise faience. Worn with a ceremonial wig fused with gold rings. Footwear: Beaded leather sandals.",
           "High Priestess: A tight-fitting pleated linen sheath dress with a heavy gold sash. She wears a solid gold circlet featuring a lotus motif and a heavy jeweled collar. Footwear: Fine leather sandals."
         ]
       },
       {
-        // Reference: Great Sphinx Procession
-        // Fix: Wide-angle, Egyptian Obelisks.
+        // 2. GREAT SPHINX & OBELISKS
+        // Wide-angle, Processional Path, Alabaster Sphinxes.
         prompt: "A majestic wide-angle full-body portrait with the Great Sphinx of Giza filling the background. The subject stands on a wide paved processional path lined with small alabaster sphinxes. The Sphinx texture is sharp limestone. In the foreground, tall gold-capped obelisks frame the shot. Harsh desert sunlight glints off heavy gold jewelry. Monumental scale.",
         maleClothingIds: [
           "Warrior Pharaoh: A ceremonial Golden Corselet (armor made of gold scales) worn over a tunic. Broad gold armbands, a patterned leather battle belt with gold lions, and the Blue War Crown (Khepresh). Footwear: High-strapped leather battle sandals.",
-          "Royal Overseer of Works: A fine pleated linen cape covering the shoulders, worn over a starched triangular kilt. A heavy gold chain of office with a large scarab pendant. Shoulder-length black formal wig with a gold Uraeus circlet. Footwear: Sturdy leather sandals.",
+          "Royal Overseer of Works: A fine pleated linen cape covering the shoulders, worn over a starched triangular kilt. A heavy gold chain of office with a large scarab pendant. Formal headpiece with a gold Uraeus circlet. Footwear: Sturdy leather sandals.",
           "Royal Treasurer: A distinct high-waisted linen garment reaching the ankles, with a stiff triangular front panel. Carrying a gold seal and a papyrus scroll. Heavy gold armlets. Footwear: Fine leather sandals."
         ],
         femaleClothingIds: [
           "Royal Matriarch: A stiff pleated linen gown in cream with distinct gold thread embroidery on the hem and sleeves. A broad gold Wesekh collar and a gold Modius (crown base) topped with tall plumes. Footwear: Gold sandals.",
           "Palace Noblewoman: A fitted sheath dress made of very fine pleated linen. Worn with a heavy gold headband featuring a central Uraeus cobra and heavy gold hoop earrings. Footwear: Fine leather sandals.",
-          "Queen's Attendant: A tight-fitting white sheath dress with a vibrant gold-and-lapis patterned sash, a heavy gold pectoral necklace, and a long heavy black wig with gold tubes. Footwear: Embellished leather sandals."
+          "Queen's Attendant: A tight-fitting white sheath dress with a vibrant gold-and-lapis patterned sash, a heavy gold pectoral necklace, and a formal wig with gold tubes. Footwear: Embellished leather sandals."
         ]
       },
       {
-        // Reference: Karnak Hypostyle Hall
-        // Fix: Wide-angle, Gold Offering Tables.
+        // 3. KARNAK HYPOSTYLE HALL
+        // Wide-angle, Gold Offering Tables, Electrum Doors.
         prompt: "A cinematic wide-angle full-body portrait inside the Hypostyle Hall of Karnak Temple. The subject is small relative to the towering columns covered in painted hieroglyphs. They stand next to massive solid gold offering tables reflecting the light. In the background, electrum-plated (gold/silver mix) temple doors shine. The air is filled with incense smoke.",
         maleClothingIds: [
           "Ceremonial Pharaoh: A long, sheer pleated linen robe worn over a gold-patterned Shendyt kilt. Adorned with a massive gold collar, gold bracelets, and the Double Crown (Pschent). Footwear: Royal gold sandals.",
@@ -61,8 +61,8 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // Reference: Palace Terrace
-        // Fix: Wide-angle, Lion Throne, Lotus Columns.
+        // 4. ROYAL PALACE TERRACE
+        // Wide-angle, Lion Throne, Lotus Columns.
         prompt: "A wide-angle full-body portrait on the Grand Riverside Terrace of the Royal Palace. The subject stands centrally on the polished marble floor. To the side is a magnificent Golden Lion Throne and tall golden candelabras. In the background, painted Lotus Columns support the roof, and the Nile flows in the distance. The scene is open and airy.",
         maleClothingIds: [
           "Palace Pharaoh: A distinctive Golden Pleated Shoulder Cape worn over a bare chest, paired with a long fine linen kilt with a stiff gold front panel. A heavy gold Wesekh collar. Footwear: Gold sandals with upturned toes.",
@@ -72,12 +72,13 @@ export const ERAS: EraData[] = [
         femaleClothingIds: [
           "Queen on the Terrace: A fitted linen sheath gown woven with shimmering gold thread. A heavy wig adorned with a gold circlet and a ceremonial scent cone. Massive gold earrings. Footwear: Gold-leafed sandals.",
           "Royal Harpist: A fine pleated linen dress over a sheath, with a wide gold sash. Gold hoop earrings and a complex braided wig with gold tubes. Footwear: Beaded sandals.",
-          "Royal Nurse/Matron: A high-necked fine linen dress with gold embroidery on the chest, a heavy red carnelian and gold necklace, and a Tripartite black wig. Footwear: Simple leather sandals."
+          // REPHRASED FOR SAFETY:
+          "Palace Noblewoman: A high-necked fine linen dress with elegant gold embroidery on the bodice. She wears a heavy necklace of red carnelian and gold. A formal ceremonial wig frames the face. Footwear: Fine leather sandals."
         ]
       },
       {
-        // Reference: Luxor Temple
-        // Fix: Wide-angle, Golden Statues.
+        // 5. LUXOR TEMPLE COURTYARD
+        // Wide-angle, Golden Statues, Processional Barks.
         prompt: "A dramatic wide-angle full-body portrait at Luxor Temple. The subject stands in the center of the vast forecourt. Behind them loom the colossal golden-granite statues of the Pharaoh. Priests carry a golden processional bark in the distance. Iron braziers burn brightly, illuminating the carved hieroglyphs on the walls.",
         maleClothingIds: [
           "Processional Pharaoh: A gold-embroidered linen tunic covered by a massive royal gold collar. Heavy gold wrist gauntlets, a gold-patterned kilt, and the striped Nemes headdress. Footwear: Heavy royal sandals.",
@@ -86,13 +87,13 @@ export const ERAS: EraData[] = [
         ],
         femaleClothingIds: [
           "Queen in Procession: A fitted white sheath gown overlaid with a detailed sash of gold beads. A Vulture headdress and heavy gold arm cuffs. Footwear: Gold sandals.",
-          "Noble Attendant: A simple, elegant fitted white dress with a wide gold patterned belt, carrying a gold sistrum (ritual rattle). Footwear: Leather sandals.",
+          "Noble Attendant of the Queen: A simple, elegant fitted white dress with a wide gold patterned belt, carrying a gold sistrum (ritual rattle). Footwear: Leather sandals.",
           "Temple Singer of Luxor: A tight-fitting linen sheath dress with a heavy gold Menat necklace (ritual counterpoise), a long flowing wig with gold strands, and gold bracelets. Footwear: Beaded sandals."
         ]
       },
       {
-        // Reference: Tomb Treasure Chamber
-        // Fix: Wide-angle, Gold Treasures.
+        // 6. VALLEY OF THE KINGS TOMB
+        // Wide-angle, Painted Walls, Gold Treasures.
         prompt: "A wide-angle full-body portrait inside a newly opened Royal Tomb. The walls are covered in vibrant paintings and gold leaf. The subject stands amidst a hoard of treasures: golden shrines, dismantled gold chariots, and life-size gold guardian statues. The floor is covered in gold artifacts. The ultimate discovery scene.",
         maleClothingIds: [
           "Pharaoh in the Tomb: A semi-sheer pleated linen robe worn over a white kilt with a gold apron. Heavy gold collar, gold armbands, and the Blue Crown (Khepresh). Footwear: Gold sandals.",
@@ -106,8 +107,8 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // Reference: Hatshepsut Terrace
-        // Fix: Wide-angle, Sphinxes, Polish.
+        // 7. TEMPLE OF HATSHEPSUT TERRACE
+        // Wide-angle, Sphinxes, Polish.
         prompt: "A symmetrical wide-angle full-body portrait at the Temple of Hatshepsut. The subject stands centrally on the wide stone terrace. Flanking them are gold-and-lapis sphinx statues. The background features the rhythmic rows of square columns stretching far back against the limestone cliff. Majestic, pristine, and rich.",
         maleClothingIds: [
           "Regal Builder Pharaoh: A fine pleated linen tunic worn under a massive broad collar of gold and lapis lazuli. Double-pleated Shendyt kilt, and the white Hedjet crown with a gold Uraeus. Footwear: Royal sandals.",
@@ -121,8 +122,8 @@ export const ERAS: EraData[] = [
         ]
       },
       {
-        // Reference: Abu Simbel
-        // Fix: Wide-angle, Painted Statues, No "Regional" outfit.
+        // 8. ABU SIMBEL
+        // Wide-angle, Painted Statues, Monumental Low Angle.
         prompt: "A powerful low-angle wide shot at Abu Simbel. The subject is small compared to the massive stone legs of the Ramses II statue behind them. The statue base has details painted in gold and color. The red sandstone glows in the sun. The composition emphasizes the monumental scale of the temple facade.",
         maleClothingIds: [
           "Warrior Pharaoh: A Golden Corselet armor worn over a tunic. Gold armguards, a broad collar, a kilt with a gold-studded belt, and the Blue War Crown (Khepresh). Footwear: Battle sandals with gold greaves.",
