@@ -145,127 +145,97 @@ export const ERAS: EraData[] = [
   {
     id: EraId.COPTIC_EGYPT,
     name: "Coptic Egypt",
-    description: "Step into the era of monastic life, intricate textiles, and late antique art (c. 3rd–7th Century AD).",
+    description: "Step into the era of monastic life, intricate textiles, and native Egyptian art (c. 3rd–7th Century AD).",
     previewImage: "./Coptic-Preview.png",
     scenery: [
       {
-        // 1. ANCIENT MONASTERY COURTYARD
-        prompt: "A wide-angle full-body portrait in an ancient Coptic monastery courtyard. The subject stands on worn limestone pavers surrounded by desert plants and palm trees. Behind them, the rough limestone walls of the monks' cells rise up with small arched windows. The sunlight is bright and harsh, casting deep shadows. Woven palm-leaf baskets sit on the ground. Peaceful and ascetic.",
+        // 1. DEIR MAR GIRGIS (Church of St. George)
+        // Focus: The unique ROUND structure on the ROMAN TOWER base. Red brick & stone texture.
+        prompt: "A wide-angle landscape photograph capturing the full circular form of the Church of St. George (Mar Girgis) in Old Cairo. The subject stands on the ground level pavement. The church is visibly built upon the massive, ancient stone foundations of a round Roman fortress tower. The upper structure is a mix of weathered red brick and intricate stone patterning, capped by a dome. The entrance is integrated into the curve. The atmosphere is ancient and imposing.",
         maleClothingIds: [
-          // Removed "cross stitching" on hood
-          "Coptic Monk: A rough-textured wool tunic in natural dark brown, belted with a braided leather cord. He wears a distinct leather hood (qalansuwa) with geometric stitching. Footwear: Woven palm-fiber sandals.",
-          "Desert Pilgrim: A travel-worn beige linen tunic covered by a heavy striped wool cloak (Pallium). He carries a wooden staff and a leather water skin. Footwear: Worn leather sandals.",
-          "Monastery Abbot: A fine black wool tunic with wide sleeves, worn under a heavy black mantle. He holds a large wooden staff topped with a carved knob. Footwear: Black leather shoes."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Desert Mother: A simple, heavy undyed wool tunic reaching the floor. A dark blue woolen shawl covers her head and shoulders completely, pinned at the side. Footwear: Barefoot.",
-          "Pilgrim Woman: A heavy, hooded woolen cloak worn over a simple grey linen tunic. She carries a clay water flask. A linen veil protects her face from the sun. Footwear: Sturdy sandals.",
-          "Village Elder: A dark red wool tunic with black woven bands on the cuffs. A patterned woolen shawl is wrapped tightly around the upper body. Footwear: Leather sandals."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       },
       {
-        // 2. HISTORIC STREET IN OLD CAIRO
-        prompt: "A full-body environmental portrait in a historic street in Old Cairo (Masr el Adima). The subject stands on cobblestones under ancient stone arches. Iron oil lamps hang from the wood beams above. The narrow alleyway features weathered stone textures. In the background, a wooden door with inlaid geometric patterns is visible. Bustling but focused.",
+        // 2. THE HANGING CHURCH (Al-Muallaqa)
+        // Focus: Built OVER the gatehouse, ancient facade texture.
+        prompt: "A wide-angle landscape photograph in the forecourt of the Hanging Church. The subject stands on the flagstones. Behind them, the facade of the church rises, built directly over the ancient Roman gatehouse of Babylon Fortress (the 'hanging' effect). The facade features twin bell towers, dark wooden lattice screens, and ancient Coptic inscriptions weathered into the stone. Palm trees frame the historic structure.",
         maleClothingIds: [
-          "Coptic Artisan: A practical, knee-length linen tunic tucked into a leather belt, with woven decorative cuffs. He wears a leather apron and holds a woodworking chisel. Footwear: Sturdy work sandals.",
-          "Merchant of Babylon: A fine bleached linen tunic with intricate 'Coptic Weave' roundels (orbiculi) on the shoulders in purple wool depicting vine scrolls. A woven mantle is draped over one shoulder. Footwear: Finely tooled leather shoes.",
-          "Fortress Guard: A knee-length heavy wool tunic in dark green with leather reinforcements. A broad leather belt with a bronze buckle. He holds a wooden staff. Footwear: High-laced leather boots."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Weaver of Old Cairo: A practical ankle-length linen dress in natural flax color, with a colorful woven belt. She holds a wooden spindle. A simple linen kerchief ties back her hair. Footwear: Reed sandals.",
-          "Merchant's Wife: A vibrant saffron-yellow linen tunic with large woven roundels in green and red geometric designs. A sheer linen veil covers her hair, held by a gold pin. Footwear: Dyed leather shoes.",
-          "Market Woman: A layered outfit with a terracotta-colored over-tunic. She carries a woven basket filled with textiles. A linen shawl covers her head. Footwear: Simple leather sandals."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       },
       {
-        // 3. INTERIOR OF ANCIENT STONE CHURCH
-        prompt: "A cinematic wide-angle portrait inside an ancient stone church structure. The subject stands in a pool of soft, mysterious golden light filtering through high windows. The background walls are covered in faded frescoes of saints and elaborate floral motifs. The air is thick with incense smoke. Warm candlelight illuminates the subject's face and the worn stone floor.",
+        // 3. DEIR SAM3AN KHARAZ (St. Simon the Tanner Cave Church)
+        // Focus: Massive cave mouth, carvings inside rock, amphitheater scale.
+        prompt: "An ultra-wide landscape photograph inside the massive open-air Cave Church of St. Simon in Mokattam. The subject stands on the rock floor. The entire enormous natural cave mouth frames the scene. Inside, huge reliefs of Coptic saints and biblical scenes are carved directly into the sheer cliff walls. Tiers of stone seating curve around the natural amphitheater. The scale is overwhelming and rugged.",
         maleClothingIds: [
-          "Coptic Deacon: A long, pristine white linen tunic (Dalmatic) reaching the ankles with wide sleeves. A distinct embroidered vertical stripe (Clavus) in dark red runs down the front. Footwear: Leather sandals.",
-          "Liturgical Chanter: A floor-length white tunic with very wide sleeves, decorated with two vertical purple stripes. He holds a pair of bronze cymbals. Footwear: Leather sandals.",
-          // Removed holding a wooden cross
-          "Church Elder: A deep blue wool tunic with gold-thread embroidery on the neckline. He holds a leather-bound prayer book. A heavy wool mantle is draped over his shoulders. Footwear: Soft leather shoes."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Coptic Matron: A layered outfit consisting of a long-sleeved undertunic and a shorter, wide-sleeved overtunic in deep purple wool. Adorned with a heavy necklace of glass beads. Footwear: Leather sandals.",
-          "Young Devotee: A white linen tunic adorned with intricate lace-like Coptic weaving of doves and vines on the hem. A sheer veil covers her hair. She holds a beeswax candle. Footwear: Simple sandals.",
-          "Widow in Mourning: A simple black wool tunic with no decoration. A black shawl covers her head and shoulders completely. Footwear: Black slippers."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       },
       {
-        // 4. RELIGIOUS COMPLEX (MASR EL-ADIMA)
-        prompt: "A full-body portrait in the Religious Complex of Old Cairo. The subject stands in a narrow passage between ancient stone walls. Sunlight filters softly, casting long shadows on the weathered limestone. Behind them are arched entrances and wooden doors with elaborate iron fittings. The atmosphere is sacred and historic.",
+        // 4. RELIGIOUS COMPLEX ALLEYS (Old Cairo)
+        // Focus: Narrow, deep, textured stone walls, ancient feeling.
+        prompt: "A wide-angle environmental photograph within the deep, narrow alleyways of the Old Cairo Religious Complex. The subject stands between towering, rough-hewn ancient limestone walls that show centuries of wear. Stone arches connect the walls overhead. Wooden doors with heavy iron studs and faded carved Coptic geometric symbols are set into the walls. The light is diffused, creating a deep, ancient atmosphere.",
         maleClothingIds: [
-          "Monastic Scribe: A rough-textured wool tunic in natural beige. He carries a leather scroll case and reed pens tucked into his belt. A heavy woolen cloak is draped over one shoulder. Footwear: Woven sandals.",
-          "Visiting Bishop: A fine black wool tunic worn under a heavy embroidered cope (cape) featuring pomegranate designs. He wears a distinct rounded Coptic turban and holds a staff. Footwear: Black leather boots.",
-          "Architect of the Complex: A sturdy linen tunic with a leather utility belt holding a plumb line and tools. He holds a rolled parchment plan. Footwear: Sturdy walking sandals."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Noblewoman of Babylon: A voluminous linen tunic-gown dyed in soft indigo, featuring wide tapestry-woven bands (Clavi) on the sleeves depicting floral patterns. Worn with a fine linen veil. Footwear: Embroidered leather slippers.",
-          "Pious Woman: A simple unbleached linen tunic. A heavy brown woolen shawl is wrapped around her, covering her hair and body modestly. Footwear: Leather sandals.",
-          "Textile Merchant: A tunic featuring vibrant red and green woven patterns of interlacing knots. She wears heavy silver bracelets and a colorful head-wrap. Footwear: Dyed leather sandals."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       },
       {
-        // 5. THE HANGING CHURCH
-        // Replaced "ivory Coptic crosses" with "ivory geometric patterns"
-        prompt: "A wide-angle portrait inside the Hanging Church structure, elevated above the ground. The subject stands on a marble floor reflecting the warm golden candlelight. Behind them are carved wooden screens (iconostasis) inlaid with intricate ivory geometric patterns and stars. Softly glowing hanging lamps illuminate the ancient icons. Reverent and spiritual.",
+        // 5. THE COPTIC MUSEUM (Garden/Facade)
+        // Focus: Mix of stone, wood mashrabiya, peaceful historic courtyard.
+        prompt: "A wide-angle landscape photograph in the historic garden courtyard of the Coptic Museum. The subject stands on stone pavers. The main facade is a detailed mix of weathered limestone arches, intricate dark wooden Mashrabiya balconies, and inlaid stone patterns with Coptic motifs. Ancient stone columns and a dry fountain are in the foreground. It feels like a preserved ancient estate.",
         maleClothingIds: [
-          // Replaced "gold-embroidered crosses" with "vine scrolls"
-          "High Priest: A magnificent white silk-blend tunic with gold-embroidered vine scrolls and monograms. He wears a heavy cope (vestment) and a ceremonial white turban. Footwear: White leather shoes.",
-          "Choir Master: A long white linen tunic with broad red vertical stripes. He holds a large manuscript of Coptic hymns written on parchment. Footwear: Leather sandals.",
-          "Wealthy Patron: A fine purple tunic with gold-woven roundels on the knees and shoulders depicting lions. A heavy gold signet ring on his hand. Footwear: Gold-trimmed shoes."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Aristocrat of Fustat: A luxurious silk-blend tunic in deep crimson, embroidered with gold thread. A heavy jeweled collar and a pearl-studded headband. Footwear: Gold-embroidered shoes.",
-          "Bride of the Church: A pristine white layered tunic with intricate white-on-white weaving of peacock motifs. A sheer veil held by a silver circlet covers her hair. Footwear: White slippers.",
-          "Matron with Incense: A dark blue tunic with a golden mantle draped over the head. She holds a silver incense burner. Heavy gold bracelets. Footwear: Fine leather sandals."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       },
       {
-        // 6. MONASTERY OF SAINT SIMON THE TANNER
-        // Replaced "Carved crosses" with "Carved niches and symbols"
-        prompt: "A monumental full-body portrait at the Monastery of Saint Simon the Tanner site. The subject stands in the open-air sanctuary space carved directly into the massive Mokattam cliff face. Sunlight streams down onto the simple stone surfaces. Carved niches and ancient symbols are visible in the rock walls behind. Humble yet grand scale.",
+        // 6. SAINT CATHERINE’S MONASTERY (Sinai)
+        // Focus: High fortress walls, granite mountains, isolation.
+        prompt: "A wide-angle landscape photograph outside the massive fortress walls of Saint Catherine’s Monastery in Sinai. The subject stands on the rugged desert ground. The granite walls are incredibly thick and high. Behind them, jagged, dark red granite mountains rise steeply against the sky. A few cypress trees are visible inside the walls. The scene is isolated, rugged, and ancient.",
         maleClothingIds: [
-          "Stone Carver: A rough, knee-length wool tunic covered in stone dust. He holds a mallet and chisel. A leather apron protects his clothes. Footwear: Heavy boots.",
-          // Replaced holding "wooden cross" with "gnarled staff"
-          "Hermit Monk: A tattered, simple brown wool tunic tied with a rope. He has a long beard and holds a gnarled wooden staff. Footwear: Barefoot.",
-          "Pilgrim from Upper Egypt: A colorful striped galabiya-style tunic (traditional rural wear). A heavy wool cloak is thrown over the shoulder. Footwear: Leather sandals."
+          "Coptic Wool Tunic: A heavy, dark green wool tunic reaching the knees. It features distinct vertical woven bands in red and beige running down the front. Belted with a leather cord. Footwear: Woven sandals.",
+          "Merchant's Tunic: A fine linen tunic in natural flax color. It has broad vertical stripes (Clavi) in purple wool running from shoulder to hem. Footwear: Leather shoes.",
+          "Monk's Habit: A rough, dark brown wool tunic tied with a rope belt. He wears a leather hood. Footwear: Woven palm-fiber sandals."
         ],
         femaleClothingIds: [
-          "Village Woman: A simple linen dress in a natural earth tone. A large woven basket rests near her feet. A simple headscarf is tied back. Footwear: Reed sandals.",
-          // Replaced holding "small wooden cross" with "clay oil lamp"
-          "Devoted Pilgrim: A plain grey wool tunic. She kneels or stands humbly, holding a small clay oil lamp. A rough shawl covers her hair. Footwear: Worn sandals.",
-          "Healer: A tunic dyed with natural herbs (greenish tint). She carries a leather pouch of medicines. A linen veil protects her from the sun. Footwear: Leather sandals."
-        ]
-      },
-      {
-        // 7. CHURCH OF SAINT GEORGE (MAR GIRGIS)
-        prompt: "A wide-angle portrait inside the distinctive round structure of the Church of Saint George. The subject stands on the circular floor. Soft daylight enters through small arched windows high above, highlighting the ancient brickwork and worn stone textures. Behind them is a dark wooden screen carved with intricate arabesque patterns. Solemn and silent.",
-        maleClothingIds: [
-          "Roman-Egyptian Official: A tunic with broad purple shoulder stripes (Clavi). A heavy gold signet ring and a draped white cloak (Pallium) reflecting the Roman influence. Footwear: Leather boots.",
-          "Church Warden: A simple dark brown tunic with a large ring of keys hanging from his belt. He holds a lantern. Footwear: Sturdy sandals.",
-          "Icon Painter: A linen tunic stained with paint. He holds a wooden palette and brushes. A leather apron covers his lap. Footwear: Simple shoes."
-        ],
-        femaleClothingIds: [
-          "Alexandrian Lady: A crimson tunic with a gold necklace of emeralds and pearls. Her hair is styled in braids with gold pins (Roman style). Footwear: Fine leather slippers.",
-          "Iconographer's Daughter: A simple blue linen tunic. She holds a small pot of gold paint and a brush. A linen apron protects her clothes. Footwear: Sandals.",
-          "Pious Widow: A heavy black wool tunic and a black veil covering her face and body. She holds a strand of knotted wool prayer beads. Footwear: Black shoes."
-        ]
-      },
-      {
-        // 8. SAINT CATHERINE’S MONASTERY
-        prompt: "A dramatic full-body portrait at Saint Catherine’s Monastery. The subject stands in a simple courtyard surrounded by thick stone walls and rugged granite mountains. Cypress trees are visible in the background under a vast sky. The light is clear and crisp (high altitude). A feeling of isolation and timelessness.",
-        maleClothingIds: [
-          "Sinai Monk: A heavy black wool robe (cassock) distinctive to the region, worn with a cylindrical black hat. He has a long beard. Footwear: Heavy mountain boots.",
-          "Bedouin Guide: A long white tunic with a heavy goat-hair cloak (bisht) for warmth. A simple cloth wrapped around the head. Footwear: Camel-leather sandals.",
-          "Byzantine Pilgrim: A rich velvet tunic with gold embroidery of eagles (traveling noble). A fur-lined cloak for the mountain cold. Footwear: Fur-lined boots."
-        ],
-        femaleClothingIds: [
-          "Byzantine Noblewoman: A heavy brocade tunic with a high collar for warmth. A velvet cloak is draped over her shoulders. A jeweled headdress. Footwear: Leather boots.",
-          "Mountain Pilgrim: A thick wool dress in dark grey. A heavy woolen shawl covers her head and wraps around her body against the wind. Footwear: Sturdy boots.",
-          // Replaced "cross-stitch" with "geometric embroidery"
-          "Local Bedouin Woman: A black dress with intricate geometric embroidery in red on the chest (Sinai style). A black veil covers her head. Footwear: Leather sandals."
+          "Square-Neck Tunic: A natural unbleached linen tunic reaching the ankles. It features a square-shaped embroidered neckline in dark red geometric patterns. Her hair is braided. Footwear: Reed sandals.",
+          "Decorated Tunic: A vibrant saffron-yellow tunic. It features a heavy woven collar in black and red wool. She wears silver bracelets. Footwear: Dyed leather shoes.",
+          "Simple Tunic: A sturdy linen tunic dyed in a faded terracotta color. It features woven roundels (circles) on the knees in green wool. Footwear: Sturdy sandals."
         ]
       }
     ],
