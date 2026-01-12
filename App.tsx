@@ -12,6 +12,7 @@ const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
@@ -44,11 +45,14 @@ const App: React.FC = () => {
         if (selectedEra.id === EraId.MODERN_EGYPT) {
           // "Snap a Memory" mode: Skip AI generation, just use the original photo
           resultImage = imageSrc;
+          setGeneratedPrompt('Modern Egypt - Snap a Memory (No AI Prompt)');
           // Small artificial delay for consistent UX
           await new Promise(resolve => setTimeout(resolve, 1000));
         } else {
           // Historical eras: Run Gemini AI transformation
-          resultImage = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+          const result = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+          resultImage = result.image;
+          setGeneratedPrompt(result.prompt);
         }
 
         // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
@@ -75,6 +79,7 @@ const App: React.FC = () => {
 
   const handleRestart = () => {
     setGeneratedImage(null);
+    setGeneratedPrompt('');
     setSelectedEra(null);
     setFaceDetectionResult(null);
     setSessionKey(prev => prev + 1);
@@ -101,6 +106,7 @@ const App: React.FC = () => {
           selectedEra && generatedImage ? (
             <ResultScreen
               imageSrc={generatedImage}
+              prompt={generatedPrompt}
               era={selectedEra}
               faceData={faceDetectionResult}
               onRestart={handleRestart}

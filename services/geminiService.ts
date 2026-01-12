@@ -35,11 +35,16 @@ const incrementGeneratedCount = async () => {
   }
 };
 
+export interface GenerationResult {
+  image: string;
+  prompt: string;
+}
+
 export const generateHistoricalImage = async (
   base64Image: string,
   era: EraData,
   faceData: FaceDetectionResult
-): Promise<string> => {
+): Promise<GenerationResult> => {
   const ai = getAiClient();
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
@@ -210,7 +215,10 @@ export const generateHistoricalImage = async (
           // Increment dashboard count after successful generation
           incrementGeneratedCount();
 
-          return `data:image/jpeg;base64,${part.inlineData.data}`;
+          return {
+            image: `data:image/jpeg;base64,${part.inlineData.data}`,
+            prompt: prompt
+          };
         }
       }
     }

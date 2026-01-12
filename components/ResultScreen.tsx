@@ -4,13 +4,14 @@ import { Download, RotateCcw, Share2, QrCode, Loader2, Printer, CheckCircle2, XC
 
 interface ResultScreenProps {
   imageSrc: string;
+  prompt: string;
   era: EraData;
   faceData: FaceDetectionResult | null;
   onRestart: () => void;
   onUpdateImage: (newImage: string) => void;
 }
 
-export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceData, onRestart, onUpdateImage }) => {
+export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, era, faceData, onRestart, onUpdateImage }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [printers, setPrinters] = useState<any[]>([]);
@@ -64,6 +65,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, era, faceD
         const formData = new FormData();
         formData.append('image', blob, 'result.png');
         formData.append('folder', 'kemet-mirror');
+        formData.append('metadata', JSON.stringify({
+          event: 'Cairo Airport Photobooth',
+          photobooth_id: 'kemet_mirror_1',
+          era: era.name,
+          prompt: prompt
+        }));
 
         const response = await fetch('https://qr-web-api.vercel.app/upload', {
           method: 'POST',
