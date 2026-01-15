@@ -154,7 +154,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
       className="h-full w-full relative overflow-hidden bg-black"
       onClick={unmuteVideo}
     >
-      {/* Background Video Layer */}
+      {/* Background Video Layer - Commented out as requested
       <div
         className={`absolute inset-0 transition-all duration-[1800ms] ease-in-out ${isExiting ? 'opacity-0 scale-110 blur-2xl' : 'opacity-100 scale-100'}`}
       >
@@ -168,7 +168,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         >
           <source src="./isis_test.mp4" type="video/mp4" />
         </video>
-      </div>
+      </div> 
+      */}
 
       {/* Intro Frame Layer */}
       <div

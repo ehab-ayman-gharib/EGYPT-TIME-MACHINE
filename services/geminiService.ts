@@ -73,10 +73,7 @@ export const generateHistoricalImage = async (
     else if (faceData.femaleCount > 0) subjectDescription = "a woman";
     else subjectDescription = "a person";
 
-    // Special logic for OLD_EGYPT: Prompt for a companion character (text-only bridge)
-    if (era.id === 'OLD_EGYPT') {
-      includeCharacter = true;
-    }
+
   } else {
     const parts = [];
     if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} ${faceData.maleCount > 1 ? 'men' : 'man'}`);
