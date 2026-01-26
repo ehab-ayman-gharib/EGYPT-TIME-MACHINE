@@ -132,6 +132,9 @@ export const ERAS: EraData[] = [
       "./Stamps/Old-Egyptian/1.png",
       "./Stamps/Old-Egyptian/2.png",
       "./Stamps/Old-Egyptian/3.png"
+    ],
+    frames: [
+      "./Frames/Old-Egyptian/1.png"
     ]
   },
   {
@@ -229,6 +232,11 @@ export const ERAS: EraData[] = [
       "./Stamps/Coptic/1.png",
       "./Stamps/Coptic/2.png",
       "./Stamps/Coptic/3.png"
+    ],
+    frames: [
+      "./Frames/Coptic/1.png",
+      "./Frames/Coptic/2.png",
+      "./Frames/Coptic/3.png"
     ]
   },
   {
@@ -295,6 +303,11 @@ export const ERAS: EraData[] = [
       "./Stamps/Islamic/2.png",
       "./Stamps/Islamic/3.png",
       "./Stamps/Islamic/4.png"
+    ],
+    frames: [
+      "./Frames/Islamic/1.png",
+      "./Frames/Islamic/2.png",
+      "./Frames/Islamic/3.png"
     ]
   },
   {
@@ -321,6 +334,10 @@ export const ERAS: EraData[] = [
     ],
     stamps: [
       "./Stamps/Modern-Egypt/1.png"
+    ],
+    frames: [
+      "./Frames/Modern-Egypt/1.png",
+      "./Frames/Modern-Egypt/2.png"
     ]
   },
   {
@@ -331,6 +348,10 @@ export const ERAS: EraData[] = [
     scenery: [],
     stamps: [
       "./Stamps/Modern-Egypt/1.png"
+    ],
+    frames: [
+      "./Frames/Modern-Egypt/1.png",
+      "./Frames/Modern-Egypt/2.png"
     ]
   }
 ];

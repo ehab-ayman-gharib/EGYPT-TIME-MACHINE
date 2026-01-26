@@ -27,6 +27,7 @@ export interface EraData {
   previewImage: string;
   scenery: Scenery[];
   stamps: string[];
+  frames: string[];
   characters?: string[];
 }
 
