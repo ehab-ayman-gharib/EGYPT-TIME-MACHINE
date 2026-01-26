@@ -322,5 +322,15 @@ export const ERAS: EraData[] = [
     stamps: [
       "./Stamps/Modern-Egypt/1.png"
     ]
+  },
+  {
+    id: EraId.SNAP_A_MEMORY,
+    name: "Snap a Memory",
+    description: "Capture a beautiful portrait with an Egyptian frame.",
+    previewImage: "./Snap-A-Memory.png",
+    scenery: [],
+    stamps: [
+      "./Stamps/Modern-Egypt/1.png"
+    ]
   }
 ];

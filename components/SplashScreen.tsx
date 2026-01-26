@@ -188,37 +188,32 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
       >
         <div className="relative flex flex-col items-center justify-end w-full pb-8">
           {/* Era Selection Row */}
-          <div className="flex justify-center items-end gap-2 mb-6 px-2 w-full">
+          <div className="flex justify-center items-end gap-1 md:gap-4 mb-6 px-2 w-full max-w-7xl">
             {ERAS.map((era) => (
               <div
                 key={era.id}
-                className="flex flex-col items-center gap-2 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                className="flex flex-col items-center gap-1 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 onClick={() => handleEraClick(era)}
               >
-                {/* Circular image or icon with golden border */}
-                <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full border-2 border-yellow-500/60 bg-black/20 group-hover:border-yellow-400 transition-all duration-300 shadow-[0_0_15px_rgba(234,179,8,0.3)] group-hover:shadow-[0_0_20px_rgba(234,179,8,0.5)]">
-                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
-                    {era.id === EraId.MODERN_EGYPT ? (
-                      <Camera className="w-10 h-10 md:w-12 md:h-12 text-yellow-500/80 group-hover:text-yellow-400 group-hover:scale-110 transition-all duration-500" />
-                    ) : (
-                      <img
-                        src={era.previewImage}
-                        alt={era.name}
-                        className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
-                      />
+                {/* Preview Image (Renders as is, already has border) */}
+                <div className="relative w-[18.5vw] h-[31vw] md:w-40 md:h-64 flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center relative">
+                    <img
+                      src={era.previewImage}
+                      alt={era.name}
+                      className="w-full h-full object-contain grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
+                    />
+
+                    {/* Snap a Memory specific Camera icon overlay */}
+                    {era.id === EraId.SNAP_A_MEMORY && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <div className="bg-black/40 p-3 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform duration-500">
+                          <Camera className="w-8 h-8 md:w-12 md:h-12 text-yellow-500" />
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {/* Subtle inner glow */}
-                  <div className="absolute inset-0 rounded-full shadow-[inset_0_0_15px_rgba(0,0,0,0.6)] pointer-events-none" />
                 </div>
-
-                {/* Era Name */}
-                <span className="text-white text-[10px] md:text-xs font-bold uppercase tracking-[0.1em] drop-shadow-lg text-center whitespace-nowrap">
-                  {era.id === EraId.OLD_EGYPT ? "OLD EGYPTIAN" :
-                    era.id === EraId.ISLAMIC_EGYPT ? "ISLAMIC" :
-                      era.id === EraId.COPTIC_EGYPT ? "COPTIC ERA" :
-                        "SNAP A MEMORY"}
-                </span>
               </div>
             ))}
           </div>

@@ -192,20 +192,19 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onBack,
         </div>
       )}
 
-      {/* Countdown Overlay - Solid Pie Slice */}
+      {/* Countdown Overlay - Using Custom Container */}
       {countdown !== null && countdown > 0 && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-          <div className="relative w-56 h-56 flex items-center justify-center rounded-full border-[8px] border-white shadow-2xl">
-            {/* The Pie Slice Fill */}
-            <div
-              className="absolute inset-0 rounded-full transition-all duration-1000 ease-linear"
-              style={{
-                background: `conic-gradient(#eab308 ${(countdown / 3) * 360}deg, rgba(234, 179, 8, 0.2) 0deg)`
-              }}
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 pointer-events-none">
+          <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center animate-pulse-slow">
+            {/* Background Container Image */}
+            <img
+              src="./Countdown_Container.png"
+              alt=""
+              className="absolute inset-0 w-full h-full object-contain"
             />
 
-            {/* Centered Text */}
-            <span className="relative z-10 text-8xl font-bold text-white brand-font drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+            {/* Countdown Text with Custom Font */}
+            <span className="relative z-10 text-7xl md:text-[9rem] font-bold text-white countdown-font drop-shadow-[0_0_20px_rgba(234,179,8,0.4)]">
               {countdown}
             </span>
           </div>

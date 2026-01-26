@@ -42,10 +42,10 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
-        if (selectedEra.id === EraId.MODERN_EGYPT) {
+        if (selectedEra.id === EraId.SNAP_A_MEMORY) {
           // "Snap a Memory" mode: Skip AI generation, just use the original photo
           resultImage = imageSrc;
-          setGeneratedPrompt('Modern Egypt - Snap a Memory (No AI Prompt)');
+          setGeneratedPrompt('Snap a Memory (No AI Prompt)');
           // Small artificial delay for consistent UX
           await new Promise(resolve => setTimeout(resolve, 1000));
         } else {
