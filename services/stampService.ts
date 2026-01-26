@@ -5,14 +5,16 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
         const mainImage = new Image();
         const stampImage = new Image();
         const logoImage = new Image();
+        const sloganImage = new Image();
 
         mainImage.crossOrigin = "anonymous";
         stampImage.crossOrigin = "anonymous";
         logoImage.crossOrigin = "anonymous";
+        sloganImage.crossOrigin = "anonymous";
 
         const hasStamp = era.id !== EraId.MODERN_EGYPT && era.stamps && era.stamps.length > 0;
         let assetsLoaded = 0;
-        const totalAssets = hasStamp ? 3 : 2;
+        const totalAssets = hasStamp ? 4 : 2; // logo + main + (stamp + slogan if not modern)
 
         const onAssetLoad = () => {
             assetsLoaded++;
@@ -39,6 +41,10 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             stampImage.onerror = onError;
             const randomStamp = era.stamps[Math.floor(Math.random() * era.stamps.length)];
             stampImage.src = randomStamp;
+
+            sloganImage.onload = onAssetLoad;
+            sloganImage.onerror = onError;
+            sloganImage.src = './Text-Slogan.png';
         }
 
         const processComposition = () => {
@@ -74,6 +80,15 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
                 const y = canvas.height - stampHeight - (padding * 1.6); // Lifted slightly higher
 
                 ctx.drawImage(stampImage, x, y, stampWidth, stampHeight);
+
+                // 3. Draw Text Slogan - Bottom Left (Mirrors Stamp Position)
+                const sloganScale = 0.35; // Slogans are usually wider, so giving it more scale
+                const sloganWidth = canvas.width * sloganScale;
+                const sloganHeight = sloganWidth * (sloganImage.height / sloganImage.width);
+                const sloganX = padding;
+                const sloganY = canvas.height - sloganHeight - (padding * 1.6);
+
+                ctx.drawImage(sloganImage, sloganX, sloganY, sloganWidth, sloganHeight);
             }
 
             resolve(canvas.toDataURL('image/jpeg', 0.95));
