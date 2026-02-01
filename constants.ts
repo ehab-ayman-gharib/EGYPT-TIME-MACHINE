@@ -234,9 +234,7 @@ export const ERAS: EraData[] = [
       "./Stamps/Coptic/3.png"
     ],
     frames: [
-      "./Frames/Coptic/1.png",
-      "./Frames/Coptic/2.png",
-      "./Frames/Coptic/3.png"
+      "./Frames/Coptic/1.png"
     ]
   },
   {
@@ -305,9 +303,7 @@ export const ERAS: EraData[] = [
       "./Stamps/Islamic/4.png"
     ],
     frames: [
-      "./Frames/Islamic/1.png",
-      "./Frames/Islamic/2.png",
-      "./Frames/Islamic/3.png"
+      "./Frames/Islamic/1.png"
     ]
   },
   {
@@ -350,8 +346,7 @@ export const ERAS: EraData[] = [
       "./Stamps/Modern-Egypt/1.png"
     ],
     frames: [
-      "./Frames/Modern-Egypt/1.png",
-      "./Frames/Modern-Egypt/2.png"
+      "./Frames/Modern-Egypt/1.png"
     ]
   }
 ];
