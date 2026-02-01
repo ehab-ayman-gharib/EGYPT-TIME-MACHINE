@@ -59,27 +59,38 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             // 1. Draw Background - BASE layer
             ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
-            // 2. Draw Main Image - MIDDLE layer (contained within the background)
-            // Define the containment area (leaving space for background to show around edges)
-            const containmentWidth = canvas.width * 0.92;  // Use 92% of canvas width
-            const containmentHeight = canvas.height * 0.92; // Use 92% of canvas height
+            // 2. Draw Main Image - MIDDLE layer
+            // The AI-generated image should fit INSIDE the frame's transparent center
+            // Make it smaller than the frame so the decorative border extends beyond the photo
+            const imageDisplayWidth = canvas.width * 0.75;  // Image at 75% of canvas
+            const imageDisplayHeight = canvas.height * 0.75;
 
-            // Scale the image to fit within the containment area while maintaining aspect ratio
-            const scale = Math.min(containmentWidth / mainImage.width, containmentHeight / mainImage.height);
-            const targetWidth = mainImage.width * scale;
-            const targetHeight = mainImage.height * scale;
+            // Calculate scaling to fit the image within the display area while maintaining aspect ratio
+            const imageScale = Math.min(imageDisplayWidth / mainImage.width, imageDisplayHeight / mainImage.height);
+            const scaledImageWidth = mainImage.width * imageScale;
+            const scaledImageHeight = mainImage.height * imageScale;
 
-            // Center the contained image on the canvas
-            const targetX = (canvas.width - targetWidth) / 2;
-            const targetY = (canvas.height - targetHeight) / 2;
+            // Center the image on the canvas
+            const imageX = (canvas.width - scaledImageWidth) / 2;
+            const imageY = (canvas.height - scaledImageHeight) / 2;
 
-            ctx.drawImage(mainImage, targetX, targetY, targetWidth, targetHeight);
+            ctx.drawImage(mainImage, imageX, imageY, scaledImageWidth, scaledImageHeight);
 
-            // 3. Draw Frame - TOP layer (overlay on captured image area only)
+            // 3. Draw Frame - TOP layer (larger than the image to create border effect)
             if (hasFrame && frameImg) {
-                // Draw frame at the same position and size as the main image
-                // This creates a decorative border around the photo, not the full canvas
-                ctx.drawImage(frameImg, targetX, targetY, targetWidth, targetHeight);
+                // Frame is drawn LARGER than the image (92% vs 85%)
+                // This creates the effect of the photo sitting inside the decorative frame
+                const frameDisplayWidth = canvas.width * 0.92;  // Frame at 92% of canvas
+                const frameDisplayHeight = canvas.height * 0.92;
+
+                const frameScale = Math.min(frameDisplayWidth / frameImg.width, frameDisplayHeight / frameImg.height);
+                const scaledFrameWidth = frameImg.width * frameScale;
+                const scaledFrameHeight = frameImg.height * frameScale;
+
+                const frameX = (canvas.width - scaledFrameWidth) / 2;
+                const frameY = (canvas.height - scaledFrameHeight) / 2;
+
+                ctx.drawImage(frameImg, frameX, frameY, scaledFrameWidth, scaledFrameHeight);
             }
 
             // Stamping/Branding logic remains commented out per user request

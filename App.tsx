@@ -98,9 +98,9 @@ const App: React.FC = () => {
         // This screen is now merged with SPLASH
         return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
       case AppScreen.CAMERA:
-        return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
+        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
       case AppScreen.PROCESSING:
-        return <CameraCapture onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} isProcessing={true} />;
+        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} isProcessing={true} />;
       case AppScreen.RESULT:
         return (
           selectedEra && generatedImage ? (
