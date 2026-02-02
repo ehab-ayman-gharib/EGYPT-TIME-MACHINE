@@ -19,5 +19,3 @@ View your app in AI Studio: https://ai.studio/apps/drive/1sMexfKRQ52wexY7G6YXy8X
 3. Run the app:
    `npm run dev`
 
-
-GEMINI_API_KEY=AIzaSyBSt7WUy-wdnrGkegUse4B2Olxl6GrFJJk
