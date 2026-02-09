@@ -52,24 +52,25 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
                 return;
             }
 
-            // Fixed canvas size based on background requirements: 1266 x 1836 (2:3 Ratio)
-            canvas.width = 1266;
-            canvas.height = 1836;
+            // Canvas size for 4x6 inch printing at 300 DPI: 1800 x 2700 pixels
+            canvas.width = 1800;
+            canvas.height = 2700;
 
             // 1. Draw Background - BASE layer
             ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
             // 2. Draw Main Image - MIDDLE layer
-            // User specified exact dimensions for the inner photo to fit the frame: 944 x 1652
-            const targetImageWidth = 944;
-            const targetImageHeight = 1652;
+            // Scale the photo area proportionally: original was 944x1652 at 1266x1836 canvas
+            // New scale factor: 1800/1266 = 1.4218
+            const scaleFactor = canvas.width / 1266;
+            const targetImageWidth = Math.round(944 * scaleFactor);   // ~1342px
+            const targetImageHeight = Math.round(1652 * scaleFactor); // ~2349px
 
             // Center the image on the canvas
             const imageX = (canvas.width - targetImageWidth) / 2;
             const imageY = (canvas.height - targetImageHeight) / 2;
 
             // Draw image to fill the target area (Cover)
-            // Calculate aspect ratios to perform a "cover" crop if necessary
             const imgAspect = mainImage.width / mainImage.height;
             const targetAspect = targetImageWidth / targetImageHeight;
 
@@ -89,9 +90,9 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
 
             // 3. Draw Frame - TOP layer
             if (hasFrame && frameImg) {
-                // User specified exact frame dimensions from Figma: 1181 x 1771.65
-                const targetFrameWidth = 1181;
-                const targetFrameHeight = 1772; // Rounded from 1771.65
+                // Scale frame dimensions proportionally: original was 1181x1772 at 1266x1836 canvas
+                const targetFrameWidth = Math.round(1181 * scaleFactor);  // ~1679px
+                const targetFrameHeight = Math.round(1772 * scaleFactor); // ~2520px
 
                 const frameX = (canvas.width - targetFrameWidth) / 2;
                 const frameY = (canvas.height - targetFrameHeight) / 2;
@@ -111,7 +112,7 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
             */
 
-            resolve(canvas.toDataURL('image/png', 0.9));
+            resolve(canvas.toDataURL('image/jpeg', 0.9));
         };
     });
 };

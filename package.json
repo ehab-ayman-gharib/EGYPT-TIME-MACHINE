@@ -43,8 +43,13 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*",
-      "printer-config.json"
+      "electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "printer-config.json",
+        "to": "printer-config.json"
+      }
     ],
     "win": {
       "target": "portable",

@@ -17,14 +17,21 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
   const [printers, setPrinters] = useState<any[]>([]);
   const [selectedPrinter, setSelectedPrinter] = useState<string>(localStorage.getItem('preferredPrinter') || '');
   const [showPrinterSettings, setShowPrinterSettings] = useState(false);
-  const [printStatus, setPrintStatus] = useState<'idle' | 'printing' | 'success' | 'error'>('idle');
+  // printStatus can be 'idle', 'printing', 'success', or 'error:Reasons'
+  const [printStatus, setPrintStatus] = useState<'idle' | 'printing' | 'success' | string>('idle');
 
   useEffect(() => {
     // Fetch printers if in Electron
     const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+    console.log('[ResultScreen] Checking for Electron:', isElectron);
+    console.log('[ResultScreen] window.require available:', !!(window as any).require);
+
     if (isElectron && (window as any).require) {
+      console.log('[ResultScreen] Fetching printers...');
       const { ipcRenderer } = (window as any).require('electron');
       ipcRenderer.invoke('get-printers').then(({ printers: pList, config }: { printers: any[], config: any }) => {
+        console.log('[ResultScreen] Printers received:', pList.map((p: any) => p.name));
+        console.log('[ResultScreen] Printer config:', config);
         setPrinters(pList);
 
         // Priority: 
@@ -33,13 +40,21 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         // 3. System Default
         if (!selectedPrinter) {
           if (config.printerName) {
+            console.log('[ResultScreen] Using config printer:', config.printerName);
             setSelectedPrinter(config.printerName);
           } else {
-            const defaultP = pList.find(p => p.isDefault);
-            if (defaultP) setSelectedPrinter(defaultP.name);
+            const defaultP = pList.find((p: any) => p.isDefault);
+            if (defaultP) {
+              console.log('[ResultScreen] Using default printer:', defaultP.name);
+              setSelectedPrinter(defaultP.name);
+            }
           }
         }
+      }).catch((err: any) => {
+        console.error('[ResultScreen] Error fetching printers:', err);
       });
+    } else {
+      console.log('[ResultScreen] Not in Electron or require not available');
     }
   }, []);
 
@@ -103,29 +118,102 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
   const handlePrint = async () => {
     // Check if running in Electron and have access to node integration
     const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+    console.log('[ResultScreen] handlePrint called');
+    console.log('[ResultScreen] isElectron:', isElectron);
+    console.log('[ResultScreen] window.require:', !!(window as any).require);
+    console.log('[ResultScreen] selectedPrinter:', selectedPrinter);
+    console.log('[ResultScreen] imageSrc length:', imageSrc?.length || 0);
 
     setPrintStatus('printing');
 
     if (isElectron && (window as any).require) {
       try {
+        console.log('[ResultScreen] Invoking print-image IPC...');
         const { ipcRenderer } = (window as any).require('electron');
+        console.log('[ResultScreen] ipcRenderer obtained:', !!ipcRenderer);
+
+        const startTime = Date.now();
+        console.log('[ResultScreen] Calling ipcRenderer.invoke("print-image")...');
         const result = await ipcRenderer.invoke('print-image', { imageSrc, printerName: selectedPrinter });
+        console.log('[ResultScreen] print-image result:', result, 'took', Date.now() - startTime, 'ms');
 
         if (result.success) {
+          console.log('[ResultScreen] Print successful!');
           setPrintStatus('success');
           setTimeout(() => setPrintStatus('idle'), 3000);
         } else {
-          setPrintStatus('error');
-          setTimeout(() => setPrintStatus('idle'), 4000);
+          console.log('[ResultScreen] Print failed:', result.failureReason);
+          // Display the specific failure reason
+          setPrintStatus(`error:${result.failureReason}`);
+          setTimeout(() => setPrintStatus('idle'), 5000);
         }
       } catch (e) {
-        console.error('Electron print failed, falling back to browser print', e);
+        console.error('[ResultScreen] Electron print failed, falling back to browser print', e);
         browserPrint();
         setPrintStatus('idle');
       }
     } else {
+      console.log('[ResultScreen] Not in Electron, using browser print');
       browserPrint();
       setPrintStatus('idle');
+    }
+  };
+
+  const handleTestPrint = async () => {
+    const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+    console.log('[ResultScreen] TEST PRINT called');
+
+    if (!isElectron || !(window as any).require) {
+      alert('Test print only works in Electron build');
+      return;
+    }
+
+    setPrintStatus('printing');
+
+    try {
+      // Create a simple solid color test image (small red square)
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 600;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Fill with white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 400, 600);
+
+        // Draw a red rectangle
+        ctx.fillStyle = 'red';
+        ctx.fillRect(50, 50, 300, 500);
+
+        // Add text
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TEST PRINT', 200, 300);
+      }
+
+      const testImageSrc = canvas.toDataURL('image/png');
+      console.log('[ResultScreen] Test image created, length:', testImageSrc.length);
+
+      const { ipcRenderer } = (window as any).require('electron');
+      const result = await ipcRenderer.invoke('print-image', {
+        imageSrc: testImageSrc,
+        printerName: selectedPrinter
+      });
+
+      console.log('[ResultScreen] Test print result:', result);
+
+      if (result.success) {
+        setPrintStatus('success');
+        setTimeout(() => setPrintStatus('idle'), 3000);
+      } else {
+        setPrintStatus(`error:${result.failureReason}`);
+        setTimeout(() => setPrintStatus('idle'), 5000);
+      }
+    } catch (e) {
+      console.error('[ResultScreen] Test print failed:', e);
+      setPrintStatus('error:Exception occurred');
+      setTimeout(() => setPrintStatus('idle'), 5000);
     }
   };
 
@@ -206,12 +294,14 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
               </>
             )}
 
-            {printStatus === 'error' && (
+            {typeof printStatus === 'string' && printStatus.startsWith('error') && (
               <>
                 <XCircle className="text-red-500" size={64} />
                 <div className="flex flex-col items-center gap-2">
-                  <span className="text-2xl font-black text-white uppercase tracking-widest">Printer Busy</span>
-                  <span className="text-xs text-red-500/70 font-bold uppercase tracking-widest">Please check connection or paper</span>
+                  <span className="text-2xl font-black text-white uppercase tracking-widest">Printer Error</span>
+                  <span className="text-xs text-red-500/70 font-bold uppercase tracking-widest text-center max-w-[250px]">
+                    {printStatus.split(':')[1] || 'Unknown error occurred'}
+                  </span>
                 </div>
               </>
             )}
@@ -256,12 +346,21 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
               )}
             </div>
 
-            <button
-              onClick={() => setShowPrinterSettings(false)}
-              className="w-full mt-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-xl transition-all"
-            >
-              Confirm Selection
-            </button>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleTestPrint}
+                disabled={!selectedPrinter || printStatus === 'printing'}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white py-3 rounded-xl font-bold uppercase tracking-widest text-sm transition-all"
+              >
+                {printStatus === 'printing' ? 'Printing...' : 'Test Print'}
+              </button>
+              <button
+                onClick={() => setShowPrinterSettings(false)}
+                className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-xl transition-all uppercase tracking-widest text-sm"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
