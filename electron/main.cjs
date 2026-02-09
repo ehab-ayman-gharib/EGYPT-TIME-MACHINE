@@ -65,14 +65,14 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                 <head>
                     <style>
                         @page { 
-                            size: 100mm 148mm; 
+                            size: 4in 6in; 
                             margin: 0; 
                         }
                         body, html { 
                             margin: 0; 
                             padding: 0; 
-                            width: 100mm; 
-                            height: 148mm; 
+                            width: 4in; 
+                            height: 6in; 
                             overflow: hidden; 
                             background-color: white; 
                             display: flex;
@@ -101,7 +101,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                 printBackground: true,
                 deviceName: printerName || '',
                 margins: { marginType: 'none' },
-                pageSize: { width: 100000, height: 148000 }, // 100x148mm in microns
+                pageSize: { width: 101600, height: 152400 }, // 4x6 inches in microns
                 landscape: false
             };
 

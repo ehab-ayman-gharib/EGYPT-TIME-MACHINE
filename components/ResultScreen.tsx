@@ -146,7 +146,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         <html>
           <head>
             <style>
-              @page { margin: 0; size: auto; }
+              @page { margin: 0; size: 4in 6in; }
               body { margin: 0; display: flex; justify-content: center; align-items: center; background: white; }
               img { max-width: 100%; height: auto; display: block; }
             </style>

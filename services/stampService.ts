@@ -52,45 +52,51 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
                 return;
             }
 
-            // Fixed canvas size based on background requirements: 1080 x 1920
-            canvas.width = 1080;
-            canvas.height = 1920;
+            // Fixed canvas size based on background requirements: 1266 x 1836 (2:3 Ratio)
+            canvas.width = 1266;
+            canvas.height = 1836;
 
             // 1. Draw Background - BASE layer
             ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
             // 2. Draw Main Image - MIDDLE layer
-            // The AI-generated image should fit INSIDE the frame's transparent center
-            // Make it smaller than the frame so the decorative border extends beyond the photo
-            const imageDisplayWidth = canvas.width * 0.75;  // Image at 75% of canvas
-            const imageDisplayHeight = canvas.height * 0.75;
-
-            // Calculate scaling to fit the image within the display area while maintaining aspect ratio
-            const imageScale = Math.min(imageDisplayWidth / mainImage.width, imageDisplayHeight / mainImage.height);
-            const scaledImageWidth = mainImage.width * imageScale;
-            const scaledImageHeight = mainImage.height * imageScale;
+            // User specified exact dimensions for the inner photo to fit the frame: 944 x 1652
+            const targetImageWidth = 944;
+            const targetImageHeight = 1652;
 
             // Center the image on the canvas
-            const imageX = (canvas.width - scaledImageWidth) / 2;
-            const imageY = (canvas.height - scaledImageHeight) / 2;
+            const imageX = (canvas.width - targetImageWidth) / 2;
+            const imageY = (canvas.height - targetImageHeight) / 2;
 
-            ctx.drawImage(mainImage, imageX, imageY, scaledImageWidth, scaledImageHeight);
+            // Draw image to fill the target area (Cover)
+            // Calculate aspect ratios to perform a "cover" crop if necessary
+            const imgAspect = mainImage.width / mainImage.height;
+            const targetAspect = targetImageWidth / targetImageHeight;
 
-            // 3. Draw Frame - TOP layer (larger than the image to create border effect)
+            let sourceX = 0, sourceY = 0, sourceWidth = mainImage.width, sourceHeight = mainImage.height;
+
+            if (imgAspect > targetAspect) {
+                // Image is wider than target: Crop width
+                sourceWidth = mainImage.height * targetAspect;
+                sourceX = (mainImage.width - sourceWidth) / 2;
+            } else {
+                // Image is taller than target: Crop height
+                sourceHeight = mainImage.width / targetAspect;
+                sourceY = (mainImage.height - sourceHeight) / 2;
+            }
+
+            ctx.drawImage(mainImage, sourceX, sourceY, sourceWidth, sourceHeight, imageX, imageY, targetImageWidth, targetImageHeight);
+
+            // 3. Draw Frame - TOP layer
             if (hasFrame && frameImg) {
-                // Frame is drawn LARGER than the image (92% vs 85%)
-                // This creates the effect of the photo sitting inside the decorative frame
-                const frameDisplayWidth = canvas.width * 0.92;  // Frame at 92% of canvas
-                const frameDisplayHeight = canvas.height * 0.92;
+                // User specified exact frame dimensions from Figma: 1181 x 1771.65
+                const targetFrameWidth = 1181;
+                const targetFrameHeight = 1772; // Rounded from 1771.65
 
-                const frameScale = Math.min(frameDisplayWidth / frameImg.width, frameDisplayHeight / frameImg.height);
-                const scaledFrameWidth = frameImg.width * frameScale;
-                const scaledFrameHeight = frameImg.height * frameScale;
+                const frameX = (canvas.width - targetFrameWidth) / 2;
+                const frameY = (canvas.height - targetFrameHeight) / 2;
 
-                const frameX = (canvas.width - scaledFrameWidth) / 2;
-                const frameY = (canvas.height - scaledFrameHeight) / 2;
-
-                ctx.drawImage(frameImg, frameX, frameY, scaledFrameWidth, scaledFrameHeight);
+                ctx.drawImage(frameImg, frameX, frameY, targetFrameWidth, targetFrameHeight);
             }
 
             // Stamping/Branding logic remains commented out per user request
