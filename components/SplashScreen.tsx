@@ -15,6 +15,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isExiting, setIsExiting] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const isExitingRef = useRef(false);
 
   const unmuteVideo = () => {
@@ -29,6 +30,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
       document.documentElement.requestFullscreen().catch((err) => {
         console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
       });
+    }
+  };
+
+  const handleStartInteraction = () => {
+    if (!hasStarted) {
+      setHasStarted(true);
+      unmuteVideo();
     }
   };
 
@@ -152,9 +160,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
   return (
     <div
       className="h-full w-full relative overflow-hidden bg-black"
-      onClick={unmuteVideo}
+      onClick={handleStartInteraction}
     >
-      {/* Background Video Layer - Commented out as requested
+      {/* Background Video Layer */}
       <div
         className={`absolute inset-0 transition-all duration-[1800ms] ease-in-out ${isExiting ? 'opacity-0 scale-110 blur-2xl' : 'opacity-100 scale-100'}`}
       >
@@ -168,8 +176,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         >
           <source src="./isis_test.mp4" type="video/mp4" />
         </video>
-      </div> 
-      */}
+      </div>
 
       {/* Intro Frame Layer */}
       <div
@@ -182,9 +189,31 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         />
       </div>
 
+      {/* Tap to Start Hint */}
+      {!hasStarted && !isExiting && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-50 pointer-events-none">
+          <div className="flex flex-col items-center gap-6 animate-pulse">
+            <div className="relative">
+              <div className="absolute inset-0 bg-yellow-500/20 blur-3xl rounded-full scale-150 animate-pulse"></div>
+              <div className="relative border-2 border-yellow-500/50 py-4 px-12 rounded-full bg-black/40 backdrop-blur-md">
+                <span className="text-yellow-500 text-3xl font-bold uppercase tracking-[0.5em] whitespace-nowrap">
+                  Tap to Start
+                </span>
+              </div>
+            </div>
+            <p className="text-white/70 text-sm uppercase tracking-[0.3em] font-light">Experience the Time Machine</p>
+          </div>
+        </div>
+      )}
+
       {/* Footer & Eras Layer */}
       <div
-        className={`absolute bottom-0 left-0 w-full z-10 transition-all duration-[2200ms] ease-in-out ${isExiting ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'}`}
+        className={`absolute bottom-0 left-0 w-full z-10 transition-all duration-[2200ms] ease-in-out ${isExiting
+          ? 'opacity-0 translate-y-10'
+          : hasStarted
+            ? 'opacity-100 translate-y-0'
+            : 'opacity-0 translate-y-20 pointer-events-none'
+          }`}
       >
         <div className="relative flex flex-col items-center justify-end w-full pb-8">
           {/* Era Selection Row */}
