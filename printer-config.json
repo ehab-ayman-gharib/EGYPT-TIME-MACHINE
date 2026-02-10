@@ -1,3 +1,4 @@
 {
-    "printerName": "DP-QW410"
+    "win32": "DP-QW410",
+    "darwin": "Dai_Nippon_Printing_DP_QW410"
 }

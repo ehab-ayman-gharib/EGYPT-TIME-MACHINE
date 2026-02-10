@@ -65,9 +65,19 @@ function getPrinterConfig() {
     try {
         if (fs.existsSync(configPath)) {
             const configData = fs.readFileSync(configPath, 'utf-8');
-            const config = JSON.parse(configData);
-            console.log('[Printer] Config loaded:', config.printerName);
-            return config;
+            const parsedConfig = JSON.parse(configData);
+
+            // Resolve printer name based on platform
+            // Supports { "win32": "...", "darwin": "..." } or legacy { "printerName": "..." }
+            const platform = process.platform;
+            let printerName = parsedConfig[platform];
+
+            if (!printerName) {
+                printerName = parsedConfig.printerName || "";
+            }
+
+            console.log(`[Printer] Config loaded for ${platform}:`, printerName);
+            return { printerName };
         }
     } catch (err) {
         console.warn('[Printer] Failed to read config:', err.message);
@@ -170,8 +180,24 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 
             // 2. Use Windows Shell Image Print engine
             // This engine handles scaling and borderless printing much better than mspaint
-            const printCommand = `rundll32.exe C:\\WINDOWS\\system32\\shimgvw.dll,ImageView_PrintTo /pt "${tempImagePath}" "${printerName}"`;
-            console.log('[Printer] Executing Shell Print command:', printCommand);
+            // 2. Platform-specific Print Command
+            let printCommand;
+
+            if (process.platform === 'win32') {
+                // Windows: Use Shell Image Print engine
+                printCommand = `rundll32.exe C:\\WINDOWS\\system32\\shimgvw.dll,ImageView_PrintTo /pt "${tempImagePath}" "${printerName}"`;
+            } else if (process.platform === 'darwin') {
+                // macOS: Use lp command
+                // -d: destination printer
+                // -o fit-to-page: scale to fit
+                // -o PageSize=dnp4x6: set specific paper size for DNP QW410
+                printCommand = `lp -d "${printerName}" -o fit-to-page -o PageSize=dnp4x6 "${tempImagePath}"`;
+            } else {
+                // Linux/Other: Basic lp command
+                printCommand = `lp -d "${printerName}" -o fit-to-page "${tempImagePath}"`;
+            }
+
+            console.log('[Printer] Executing Print command:', printCommand);
 
             exec(printCommand, (error, stdout, stderr) => {
                 console.log('[Printer] Print command completed');
@@ -192,7 +218,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                     console.log('[Printer] Print command successful');
                     console.log('[Printer] stdout:', stdout);
 
-                    // Cleanup after a delay to ensure Windows is done with the file
+                    // Cleanup after a delay
                     setTimeout(() => {
                         try {
                             if (tempImagePath && fs.existsSync(tempImagePath)) {
@@ -200,7 +226,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                                 console.log('[Printer] Cleaned up temp file');
                             }
                         } catch (e) { }
-                    }, 5000);
+                    }, 10000); // Increased delay to 10s for consistency
 
                     resolve({ success: true });
                 }
