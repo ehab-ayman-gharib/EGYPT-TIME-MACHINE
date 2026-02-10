@@ -26,6 +26,21 @@
       color: #e2e8f0;
       overflow: hidden;
       /* Prevent scrolling for app-like feel */
+      user-select: none;
+      /* Prevent text selection */
+      -webkit-user-select: none;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      /* Prevent image dragging */
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button,
+    a {
+      cursor: pointer;
     }
 
     h1,

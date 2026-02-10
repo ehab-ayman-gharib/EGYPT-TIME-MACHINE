@@ -185,6 +185,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         <img
           src="./Splash-Screen/IntroFrame.png"
           alt=""
+          draggable="false"
           className="w-full h-full object-fill drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
         />
       </div> */}
@@ -230,6 +231,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                     <img
                       src={era.previewImage}
                       alt={era.name}
+                      draggable="false"
                       className="w-full h-full object-contain grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
                     />
 
@@ -252,6 +254,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
             <img
               src="./Splash-Screen/Splash-Footer.png"
               alt=""
+              draggable="false"
               className="w-full h-auto object-contain"
             />
           </div>
