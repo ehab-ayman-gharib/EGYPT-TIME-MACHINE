@@ -67,12 +67,11 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             const frameY = (canvas.height - targetFrameHeight) / 2;
 
             // 3. Draw Main Image - MIDDLE layer
-            // The photo fills the SAME rectangle as the frame.
-            // The frame overlay (drawn on top) provides the decorative border.
-            const targetImageWidth = targetFrameWidth;
-            const targetImageHeight = targetFrameHeight;
-            const imageX = frameX;
-            const imageY = frameY;
+            // Photo sits just inside the frame's inner border, centered both ways.
+            const targetImageWidth = Math.round(targetFrameWidth * 0.82);
+            const targetImageHeight = Math.round(targetFrameHeight * 0.94);
+            const imageX = frameX + (targetFrameWidth - targetImageWidth) / 2;
+            const imageY = frameY + (targetFrameHeight - targetImageHeight) / 2;
 
             // Draw image to fill the target area (Cover / crop to fit)
             const imgAspect = mainImage.width / mainImage.height;

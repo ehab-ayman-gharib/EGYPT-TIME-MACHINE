@@ -169,7 +169,7 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    temperature: 1,
+    temperature: 0.5,
     // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"
