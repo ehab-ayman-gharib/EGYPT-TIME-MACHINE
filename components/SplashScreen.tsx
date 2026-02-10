@@ -179,7 +179,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
       </div>
 
       {/* Intro Frame Layer */}
-      <div
+      {/* <div
         className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
       >
         <img
@@ -187,7 +187,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
           alt=""
           className="w-full h-full object-fill drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
         />
-      </div>
+      </div> */}
 
       {/* Tap to Start Hint */}
       {!hasStarted && !isExiting && (
