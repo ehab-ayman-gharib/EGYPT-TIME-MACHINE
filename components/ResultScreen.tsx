@@ -388,6 +388,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
             <img
               src={imageSrc}
               alt="Generated Portrait"
+              draggable="false"
               className="w-full h-full object-contain"
             />
           </div>
@@ -435,7 +436,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
                     <span className="text-[8px] text-slate-600 font-bold uppercase">Uploading</span>
                   </div>
                 ) : qrCodeUrl ? (
-                  <img src={qrCodeUrl} alt="QR Code" className="w-full h-full object-contain" />
+                  <img src={qrCodeUrl} alt="QR Code" draggable="false" className="w-full h-full object-contain" />
                 ) : (
                   <QrCode className="text-slate-400 opacity-20" size={32} />
                 )}

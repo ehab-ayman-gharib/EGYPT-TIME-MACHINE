@@ -183,6 +183,14 @@
 <body>
   <div id="root"></div>
   <script type="module" src="./index.tsx"></script>
+  <script>
+    // Robust global prevention of image dragging
+    document.addEventListener('dragstart', (e) => {
+      if (e.target.tagName === 'IMG') {
+        e.preventDefault();
+      }
+    }, false);
+  </script>
 </body>
 
 </html>
