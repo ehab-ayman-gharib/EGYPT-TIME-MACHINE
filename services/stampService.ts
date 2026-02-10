@@ -59,18 +59,22 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             // 1. Draw Background - BASE layer
             ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
-            // 2. Draw Main Image - MIDDLE layer
-            // Scale the photo area proportionally: original was 944x1652 at 1266x1836 canvas
-            // New scale factor: 1800/1266 = 1.4218
+            // 2. Calculate the Frame position and size (centered on canvas)
             const scaleFactor = canvas.width / 1266;
-            const targetImageWidth = Math.round(944 * scaleFactor);   // ~1342px
-            const targetImageHeight = Math.round(1652 * scaleFactor); // ~2349px
+            const targetFrameWidth = Math.round(1181 * scaleFactor);  // ~1679px
+            const targetFrameHeight = Math.round(1772 * scaleFactor); // ~2520px
+            const frameX = (canvas.width - targetFrameWidth) / 2;
+            const frameY = (canvas.height - targetFrameHeight) / 2;
 
-            // Center the image on the canvas
-            const imageX = (canvas.width - targetImageWidth) / 2;
-            const imageY = (canvas.height - targetImageHeight) / 2;
+            // 3. Draw Main Image - MIDDLE layer
+            // The photo fills the SAME rectangle as the frame.
+            // The frame overlay (drawn on top) provides the decorative border.
+            const targetImageWidth = targetFrameWidth;
+            const targetImageHeight = targetFrameHeight;
+            const imageX = frameX;
+            const imageY = frameY;
 
-            // Draw image to fill the target area (Cover)
+            // Draw image to fill the target area (Cover / crop to fit)
             const imgAspect = mainImage.width / mainImage.height;
             const targetAspect = targetImageWidth / targetImageHeight;
 
@@ -88,15 +92,8 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
 
             ctx.drawImage(mainImage, sourceX, sourceY, sourceWidth, sourceHeight, imageX, imageY, targetImageWidth, targetImageHeight);
 
-            // 3. Draw Frame - TOP layer
+            // 4. Draw Frame - TOP layer (acts as the decorative border overlay)
             if (hasFrame && frameImg) {
-                // Scale frame dimensions proportionally: original was 1181x1772 at 1266x1836 canvas
-                const targetFrameWidth = Math.round(1181 * scaleFactor);  // ~1679px
-                const targetFrameHeight = Math.round(1772 * scaleFactor); // ~2520px
-
-                const frameX = (canvas.width - targetFrameWidth) / 2;
-                const frameY = (canvas.height - targetFrameHeight) / 2;
-
                 ctx.drawImage(frameImg, frameX, frameY, targetFrameWidth, targetFrameHeight);
             }
 
