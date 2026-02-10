@@ -167,15 +167,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         className={`absolute inset-0 transition-all duration-[1800ms] ease-in-out ${isExiting ? 'opacity-0 scale-110 blur-2xl' : 'opacity-100 scale-100'}`}
       >
         <video
+          key={hasStarted ? 'welcome' : 'idle'}
           ref={videoRef}
           autoPlay
           loop
           muted={isMuted}
           playsInline
           className="w-full h-full object-cover"
-        >
-          <source src="./isis_test.mp4" type="video/mp4" />
-        </video>
+          src={hasStarted ? "./IsisV1_Welcome_01.mp4" : "./isis_test.mp4"}
+        />
       </div>
 
       {/* Intro Frame Layer */}
