@@ -61,35 +61,40 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
 
             // 2. Calculate the Frame position and size (centered on canvas)
             const scaleFactor = canvas.width / 1266;
-            const targetFrameWidth = Math.round(1181 * scaleFactor);  // ~1679px
+            const targetFrameWidth = Math.round(1171 * scaleFactor);  // ~1679px
             const targetFrameHeight = Math.round(1772 * scaleFactor); // ~2520px
             const frameX = (canvas.width - targetFrameWidth) / 2;
             const frameY = (canvas.height - targetFrameHeight) / 2;
 
             // 3. Draw Main Image - MIDDLE layer
             // Photo sits just inside the frame's inner border, centered both ways.
-            const targetImageWidth = Math.round(targetFrameWidth * 0.82);
-            const targetImageHeight = Math.round(targetFrameHeight * 0.94);
-            const imageX = frameX + (targetFrameWidth - targetImageWidth) / 2;
-            const imageY = frameY + (targetFrameHeight - targetImageHeight) / 2;
+            // We define an "inset area" inside the frame, then FIT the image into it (no cropping).
+            const insetWidth = Math.round(targetFrameWidth * 0.88);
+            const insetHeight = Math.round(targetFrameHeight * 0.88);
+            //
+            const insetX = frameX + (targetFrameWidth - insetWidth) / 1.25;
+            const insetY = frameY + (targetFrameHeight - insetHeight) / 1.85;
 
-            // Draw image to fill the target area (Cover / crop to fit)
+            // Contain: Scale the full image to fit inside the inset area without cropping
             const imgAspect = mainImage.width / mainImage.height;
-            const targetAspect = targetImageWidth / targetImageHeight;
+            const insetAspect = insetWidth / insetHeight;
 
-            let sourceX = 0, sourceY = 0, sourceWidth = mainImage.width, sourceHeight = mainImage.height;
-
-            if (imgAspect > targetAspect) {
-                // Image is wider than target: Crop width
-                sourceWidth = mainImage.height * targetAspect;
-                sourceX = (mainImage.width - sourceWidth) / 2;
+            let drawWidth, drawHeight;
+            if (imgAspect > insetAspect) {
+                // Image is wider than inset: fit by width
+                drawWidth = insetWidth;
+                drawHeight = insetWidth / imgAspect;
             } else {
-                // Image is taller than target: Crop height
-                sourceHeight = mainImage.width / targetAspect;
-                sourceY = (mainImage.height - sourceHeight) / 2;
+                // Image is taller than inset: fit by height
+                drawHeight = insetHeight;
+                drawWidth = insetHeight * imgAspect;
             }
 
-            ctx.drawImage(mainImage, sourceX, sourceY, sourceWidth, sourceHeight, imageX, imageY, targetImageWidth, targetImageHeight);
+            // Center the fitted image within the inset area
+            const imageX = insetX + (insetWidth - drawWidth) / 2;
+            const imageY = insetY + (insetHeight - drawHeight) / 2;
+
+            ctx.drawImage(mainImage, 0, 0, mainImage.width, mainImage.height, imageX, imageY, drawWidth, drawHeight);
 
             // 4. Draw Frame - TOP layer (acts as the decorative border overlay)
             if (hasFrame && frameImg) {
