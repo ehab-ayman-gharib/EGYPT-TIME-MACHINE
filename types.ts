@@ -29,6 +29,7 @@ export interface EraData {
   stamps: string[];
   frames: string[];
   characters?: string[];
+  lensId?: string;
 }
 
 export interface FaceDetectionResult {

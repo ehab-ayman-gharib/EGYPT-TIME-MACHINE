@@ -1,7 +1,12 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft, Upload } from 'lucide-react';
-import { loadFaceApiModels, detectFaces } from '../services/faceService';
-import { EraData, FaceDetectionResult, EraId } from '../types';
+import { RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react';
+import {
+  bootstrapCameraKit,
+  createMediaStreamSource,
+  CameraKitSession,
+} from '@snap/camera-kit';
+import { CAMERAKIT_CONFIG } from '../services/camerakitConfig';
+import { EraData, FaceDetectionResult } from '../types';
 
 interface CameraCaptureProps {
   era: EraData | null;
@@ -11,207 +16,106 @@ interface CameraCaptureProps {
 }
 
 export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, onBack, isProcessing = false }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [session, setSession] = useState<CameraKitSession | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [isDetecting, setIsDetecting] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
+  // Initialize CameraKit
   useEffect(() => {
+    let currentSession: CameraKitSession | null = null;
+    let stream: MediaStream | null = null;
+
     const init = async () => {
       try {
-        const loaded = await loadFaceApiModels();
-        setModelsLoaded(loaded);
+        setIsInitializing(true);
 
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
+        // Bootstrap CameraKit
+        const cameraKit = await bootstrapCameraKit({
+          apiToken: CAMERAKIT_CONFIG.API_TOKEN,
+        });
+
+        // Create Session
+        if (!canvasRef.current) return;
+        currentSession = await cameraKit.createSession({
+          liveRenderTarget: canvasRef.current,
+        });
+        setSession(currentSession);
+
+        // Get Camera Stream
+        stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'user',
-            width: { ideal: 720 },
-            height: { ideal: 1280 }
-          }
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+          },
         });
-        setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
+
+        // Set Source
+        const source = createMediaStreamSource(stream);
+        currentSession.setSource(source);
+        currentSession.play();
+
+        // Apply Lens if era has one
+        if (era?.lensId) {
+          const lens = await cameraKit.lensRepository.loadLens(era.lensId, CAMERAKIT_CONFIG.GROUP_ID);
+          await currentSession.applyLens(lens);
+        } else if (CAMERAKIT_CONFIG.DEFAULT_LENS_ID) {
+          const lens = await cameraKit.lensRepository.loadLens(CAMERAKIT_CONFIG.DEFAULT_LENS_ID, CAMERAKIT_CONFIG.GROUP_ID);
+          await currentSession.applyLens(lens);
         }
+
+        setIsInitializing(false);
       } catch (err) {
-        setError("Camera access denied or unavailable.");
+        setError("Failed to initialize CameraKit or camera access denied.");
         console.error(err);
+        setIsInitializing(false);
       }
     };
+
     init();
 
     return () => {
+      if (currentSession) {
+        currentSession.pause();
+        currentSession.destroy();
+      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [era]);
 
-  const handleCaptureImmediate = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current || isDetecting) return;
-    setIsDetecting(true);
+  const handleCapture = useCallback(async () => {
+    if (!canvasRef.current || isCapturing) return;
+    setIsCapturing(true);
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
+    try {
+      // Small artificial delay for the flash effect
+      setShowFlash(true);
+      setTimeout(() => setShowFlash(false), 500);
 
-    // Only apply 9:16 cropping for Snap a Memory mode
-    // For AI modes, keep original aspect ratio (Gemini will output 9:16 anyway)
-    const shouldCropTo916 = era?.id === EraId.SNAP_A_MEMORY;
+      // Capture photo from canvas
+      const imageData = canvasRef.current.toDataURL('image/jpeg', 0.95);
 
-    if (shouldCropTo916) {
-      // Force 9:16 aspect ratio for Snap a Memory mode
-      const targetAspectRatio = 9 / 16; // Portrait (width/height)
-      const videoAspectRatio = video.videoWidth / video.videoHeight;
+      // Since we are skipping AI for now, we provide a default face detection result
+      const faceData: FaceDetectionResult = {
+        maleCount: 1,
+        femaleCount: 0,
+        childCount: 0,
+        totalPeople: 1
+      };
 
-      let sourceX = 0;
-      let sourceY = 0;
-      let sourceWidth = video.videoWidth;
-      let sourceHeight = video.videoHeight;
-
-      // Crop to 9:16 if needed
-      if (videoAspectRatio > targetAspectRatio) {
-        // Video is wider than 9:16, crop the sides
-        sourceWidth = video.videoHeight * targetAspectRatio;
-        sourceX = (video.videoWidth - sourceWidth) / 2;
-      } else if (videoAspectRatio < targetAspectRatio) {
-        // Video is taller than 9:16, crop top/bottom
-        sourceHeight = video.videoWidth / targetAspectRatio;
-        sourceY = (video.videoHeight - sourceHeight) / 2;
-      }
-
-      // Set canvas to 9:16 aspect ratio
-      const canvasWidth = 1080;
-      const canvasHeight = 1920;
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Draw the cropped video feed to canvas at 9:16 ratio
-        ctx.drawImage(
-          video,
-          sourceX, sourceY, sourceWidth, sourceHeight,  // Source crop
-          0, 0, canvasWidth, canvasHeight               // Destination
-        );
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        const faceData = await detectFaces(video, modelsLoaded);
-        onCapture(imageData, faceData);
-      }
-    } else {
-      // For AI modes: Keep original aspect ratio
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        const faceData = await detectFaces(video, modelsLoaded);
-        onCapture(imageData, faceData);
-      }
+      onCapture(imageData, faceData);
+    } catch (err) {
+      console.error("Capture failed:", err);
+    } finally {
+      setIsCapturing(false);
     }
-    setIsDetecting(false);
-  }, [era, modelsLoaded, onCapture, isDetecting]);
-
-  const handleFileUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsDetecting(true);
-
-    // Create an image element to read the file
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-
-    img.onload = async () => {
-      if (!canvasRef.current) return;
-      const canvas = canvasRef.current;
-
-      // Only apply 9:16 cropping for Snap a Memory mode
-      // For AI modes, keep original aspect ratio (Gemini will output 9:16 anyway)
-      const shouldCropTo916 = era?.id === EraId.SNAP_A_MEMORY;
-
-      if (shouldCropTo916) {
-        // Force 9:16 aspect ratio for Snap a Memory mode
-        const targetAspectRatio = 9 / 16; // Portrait (width/height)
-        const imgAspectRatio = img.width / img.height;
-
-        let sourceX = 0;
-        let sourceY = 0;
-        let sourceWidth = img.width;
-        let sourceHeight = img.height;
-
-        // Crop to 9:16 if needed
-        if (imgAspectRatio > targetAspectRatio) {
-          // Image is wider than 9:16, crop the sides
-          sourceWidth = img.height * targetAspectRatio;
-          sourceX = (img.width - sourceWidth) / 2;
-        } else if (imgAspectRatio < targetAspectRatio) {
-          // Image is taller than 9:16, crop top/bottom
-          sourceHeight = img.width / targetAspectRatio;
-          sourceY = (img.height - sourceHeight) / 2;
-        }
-
-        // Set canvas to 9:16 aspect ratio (1080x1920)
-        const canvasWidth = 1080;
-        const canvasHeight = 1920;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-          // Draw the cropped image to canvas at 9:16 ratio
-          ctx.drawImage(
-            img,
-            sourceX, sourceY, sourceWidth, sourceHeight,  // Source crop
-            0, 0, canvasWidth, canvasHeight               // Destination
-          );
-          const imageData = canvas.toDataURL('image/jpeg', 0.9);
-          const faceData = await detectFaces(img, modelsLoaded);
-          onCapture(imageData, faceData);
-        }
-      } else {
-        // For AI modes: Keep original aspect ratio, but limit size
-        const MAX_DIMENSION = 1500;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-          const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          const imageData = canvas.toDataURL('image/jpeg', 0.9);
-          const faceData = await detectFaces(img, modelsLoaded);
-          onCapture(imageData, faceData);
-        }
-      }
-      setIsDetecting(false);
-      if (event.target) event.target.value = ''; // Reset input
-    };
-  };
-
-  // Store capture handler in ref to avoid effect dependency issues
-  const captureRef = useRef(handleCaptureImmediate);
-  useEffect(() => {
-    captureRef.current = handleCaptureImmediate;
-  }, [handleCaptureImmediate]);
+  }, [onCapture, isCapturing]);
 
   // Handle countdown logic
   useEffect(() => {
@@ -223,24 +127,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      // Trigger Flash
-      setShowFlash(true);
-
-      const captureTimer = setTimeout(() => {
-        captureRef.current?.();
-
-        // Cleanup flash and countdown
-        setTimeout(() => {
-          setShowFlash(false);
-          setCountdown(null);
-        }, 500);
-      }, 50);
-      return () => clearTimeout(captureTimer);
+      handleCapture();
+      setCountdown(null);
     }
-  }, [countdown]);
+  }, [countdown, handleCapture]);
 
   const startCaptureSequence = () => {
-    if (countdown !== null || isDetecting) return;
+    if (countdown !== null || isInitializing || isCapturing) return;
     setCountdown(3);
   };
 
@@ -255,42 +148,33 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   }
 
   return (
-    <div className="h-full w-full bg-black relative flex flex-col">
-      {/* Video Feed - Full Screen Portrait */}
-      <div className="absolute inset-0 z-0">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
+    <div className="h-full w-full bg-black relative flex flex-col overflow-hidden">
+      {/* CameraKit Canvas */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center">
+        <canvas
+          ref={canvasRef}
           className="w-full h-full object-cover transform -scale-x-100"
         />
-        <canvas ref={canvasRef} className="hidden" />
       </div>
 
-
-
-      {/* Model Loading Overlay */}
-      {!modelsLoaded && !error && (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+      {/* Initializing Overlay */}
+      {isInitializing && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
-          <p className="text-white text-lg font-bold brand-font tracking-wider">INITIALIZING AI</p>
-          <p className="text-slate-300 text-xs mt-2 font-mono">Loading neural networks...</p>
+          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing CameraKit</p>
+          <p className="text-slate-300 text-xs mt-2 font-mono">Loading face swap technology...</p>
         </div>
       )}
 
-      {/* Countdown Overlay - Using Custom Container */}
+      {/* Countdown Overlay */}
       {countdown !== null && countdown > 0 && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 pointer-events-none">
           <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center animate-pulse-slow">
-            {/* Background Container Image */}
             <img
               src="./Countdown_Container.png"
               alt=""
               className="absolute inset-0 w-full h-full object-contain"
             />
-
-            {/* Countdown Text with Custom Font */}
             <span className="relative z-10 text-7xl md:text-[9rem] font-bold text-white countdown-font drop-shadow-[0_0_20px_rgba(234,179,8,0.4)]">
               {countdown}
             </span>
@@ -312,73 +196,45 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           >
             <ChevronLeft size={24} />
           </button>
-
-          {/* Empty spacer for flex alignment */}
-          <div className="w-12" />
         </div>
       )}
 
       {/* Footer Controls */}
       {!isProcessing && (
         <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-          {/* Upload Button */}
-          {/*           
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            onClick={handleFileUpload}
-            disabled={isDetecting || countdown !== null}
-            className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors disabled:opacity-50"
-          >
-            <Upload size={24} />
-          </button> */}
-
-          {/* Capture Button */}
           <button
             onClick={startCaptureSequence}
-            disabled={isDetecting || countdown !== null}
+            disabled={isInitializing || isCapturing || countdown !== null}
             className="group relative w-28 h-28 flex items-center justify-center focus:outline-none"
           >
-            {/* Idle Pulse Ring - Only visible when idle */}
-            {!isDetecting && countdown === null && (
+            {!isCapturing && countdown === null && (
               <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium"></div>
             )}
 
-            {/* Main Button Construction */}
             <div className={`
-            relative w-20 h-20 rounded-full border-[4px] flex items-center justify-center transition-all duration-300 z-10 bg-black/20 backdrop-blur-sm
-            ${isDetecting
+              relative w-20 h-20 rounded-full border-[4px] flex items-center justify-center transition-all duration-300 z-10 bg-black/20 backdrop-blur-sm
+              ${isCapturing
                 ? 'border-slate-500 scale-95'
                 : countdown !== null
-                  ? 'border-white scale-100' // Static during countdown
-                  : 'border-white group-hover:scale-105 group-active:scale-95' // Interactive idle
+                  ? 'border-white scale-100'
+                  : 'border-white group-hover:scale-105 group-active:scale-95'
               }
-          `}>
-              {/* Inner Shutter Circle */}
+            `}>
               <div className={`
-               rounded-full transition-all duration-300 shadow-sm
-               ${isDetecting
+                rounded-full transition-all duration-300 shadow-sm
+                ${isCapturing
                   ? 'w-2 h-2 bg-slate-500 opacity-0'
-                  : 'w-16 h-16 bg-white' // Simple white circle always
+                  : 'w-16 h-16 bg-white'
                 }
-             `}></div>
+              `}></div>
 
-              {/* Spinner Overlay */}
-              {isDetecting && (
+              {(isCapturing || isProcessing) && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <RefreshCw className="w-8 h-8 text-white animate-spin" />
                 </div>
               )}
             </div>
           </button>
-
-          {/* Placeholder for symmetry */}
-          <div className="w-[56px]"></div>
         </div>
       )}
     </div>

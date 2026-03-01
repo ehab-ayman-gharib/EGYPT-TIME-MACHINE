@@ -1,5 +1,5 @@
 {
-  "name": "egypt's-time-machine",
+  "name": "egypt-time-machine",
   "private": true,
   "version": "0.0.0",
   "author": "Egypt Time Machine",
@@ -14,9 +14,7 @@
     "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
-    "@google/genai": "^1.32.0",
-    "@tensorflow/tfjs": "^1.7.4",
-    "face-api.js": "^0.22.2",
+    "@snap/camera-kit": "^1.14.0",
     "lucide-react": "^0.557.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
