@@ -113,7 +113,7 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
             ctx.drawImage(logoImage, logoX, logoY, logoWidth, logoHeight);
             */
 
-            resolve(canvas.toDataURL('image/jpeg', 0.9));
+            resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
     });
 };

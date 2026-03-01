@@ -38,17 +38,22 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           apiToken: CAMERAKIT_CONFIG.API_TOKEN,
         });
 
-        // Create Session
+        // Create Session - IMPORTANT: Set dimensions BEFORE createSession
         if (!canvasRef.current) return;
+
+        canvasRef.current.width = 1080;
+        canvasRef.current.height = 1920;
+        console.log(`[CameraKit] Canvas dimensions set to 1080x1920 before session creation`);
+
         currentSession = await cameraKit.createSession({
           liveRenderTarget: canvasRef.current,
         });
         setSession(currentSession);
 
-        // Get Camera Stream
+        // Get Camera Stream with more standard constraints
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: 'user',
+            facingMode: 'environment',
             width: { ideal: 1080 },
             height: { ideal: 1920 },
           },
@@ -57,6 +62,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         // Set Source
         const source = createMediaStreamSource(stream);
         currentSession.setSource(source);
+
         currentSession.play();
 
         // Apply Lens if era has one
@@ -98,8 +104,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       setShowFlash(true);
       setTimeout(() => setShowFlash(false), 500);
 
-      // Capture photo from canvas
-      const imageData = canvasRef.current.toDataURL('image/jpeg', 0.95);
+      // Capture photo from canvas with MAX quality
+      // We use the canvas internal dimensions which we set to match the stream resolution
+      console.log(`[Capture] Capturing from canvas: ${canvasRef.current.width}x${canvasRef.current.height}`);
+      const imageData = canvasRef.current.toDataURL('image/jpeg', 1.0);
 
       // Since we are skipping AI for now, we provide a default face detection result
       const faceData: FaceDetectionResult = {
@@ -153,7 +161,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       <div className="absolute inset-0 z-0 flex items-center justify-center">
         <canvas
           ref={canvasRef}
-          className="w-full h-full object-cover transform -scale-x-100"
+          className="w-full h-full object-cover"
         />
       </div>
 
@@ -199,44 +207,6 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         </div>
       )}
 
-      {/* Footer Controls */}
-      {!isProcessing && (
-        <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-          <button
-            onClick={startCaptureSequence}
-            disabled={isInitializing || isCapturing || countdown !== null}
-            className="group relative w-28 h-28 flex items-center justify-center focus:outline-none"
-          >
-            {!isCapturing && countdown === null && (
-              <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium"></div>
-            )}
-
-            <div className={`
-              relative w-20 h-20 rounded-full border-[4px] flex items-center justify-center transition-all duration-300 z-10 bg-black/20 backdrop-blur-sm
-              ${isCapturing
-                ? 'border-slate-500 scale-95'
-                : countdown !== null
-                  ? 'border-white scale-100'
-                  : 'border-white group-hover:scale-105 group-active:scale-95'
-              }
-            `}>
-              <div className={`
-                rounded-full transition-all duration-300 shadow-sm
-                ${isCapturing
-                  ? 'w-2 h-2 bg-slate-500 opacity-0'
-                  : 'w-16 h-16 bg-white'
-                }
-              `}></div>
-
-              {(isCapturing || isProcessing) && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <RefreshCw className="w-8 h-8 text-white animate-spin" />
-                </div>
-              )}
-            </div>
-          </button>
-        </div>
-      )}
     </div>
   );
 };
