@@ -53,7 +53,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         // Get Camera Stream with more standard constraints
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: 'environment',
+            facingMode: 'user',
             width: { ideal: 1080 },
             height: { ideal: 1920 },
           },
@@ -65,11 +65,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
         currentSession.play();
 
-        // Apply Lens if era has one
-        if (era?.lensId) {
-          const lens = await cameraKit.lensRepository.loadLens(era.lensId, CAMERAKIT_CONFIG.GROUP_ID);
-          await currentSession.applyLens(lens);
-        } else if (CAMERAKIT_CONFIG.DEFAULT_LENS_ID) {
+        // Always use default lens for now as requested
+        if (CAMERAKIT_CONFIG.DEFAULT_LENS_ID) {
           const lens = await cameraKit.lensRepository.loadLens(CAMERAKIT_CONFIG.DEFAULT_LENS_ID, CAMERAKIT_CONFIG.GROUP_ID);
           await currentSession.applyLens(lens);
         }
