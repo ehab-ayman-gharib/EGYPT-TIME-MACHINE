@@ -27,11 +27,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         const loaded = await loadFaceApiModels();
         setModelsLoaded(loaded);
 
+        // Booth setup: Camera is physically rotated 90 degrees.
+        // We request landscape resolution and rotate it in code.
         const mediaStream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'user',
-            width: { ideal: 720 },
-            height: { ideal: 1280 }
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
           }
         });
         setStream(mediaStream);
@@ -60,60 +62,40 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    // Only apply 9:16 cropping for Snap a Memory mode
-    // For AI modes, keep original aspect ratio (Gemini will output 9:16 anyway)
-    const shouldCropTo916 = era?.id === EraId.SNAP_A_MEMORY;
+    // Final Booth Output: 1080x1920 Portrait
+    const canvasWidth = 1080;
+    const canvasHeight = 1920;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
-    if (shouldCropTo916) {
-      // Force 9:16 aspect ratio for Snap a Memory mode
-      const targetAspectRatio = 9 / 16; // Portrait (width/height)
-      const videoAspectRatio = video.videoWidth / video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.save();
 
-      let sourceX = 0;
-      let sourceY = 0;
-      let sourceWidth = video.videoWidth;
-      let sourceHeight = video.videoHeight;
+      // Booth setup: Camera is landscape and rotated 90 deg (Clockwise)
+      // 1. Center the coordinate system
+      ctx.translate(canvasWidth / 2, canvasHeight / 2);
 
-      // Crop to 9:16 if needed
-      if (videoAspectRatio > targetAspectRatio) {
-        // Video is wider than 9:16, crop the sides
-        sourceWidth = video.videoHeight * targetAspectRatio;
-        sourceX = (video.videoWidth - sourceWidth) / 2;
-      } else if (videoAspectRatio < targetAspectRatio) {
-        // Video is taller than 9:16, crop top/bottom
-        sourceHeight = video.videoWidth / targetAspectRatio;
-        sourceY = (video.videoHeight - sourceHeight) / 2;
-      }
+      // 2. Rotate 90 degree and Mirror
+      // Based on feedback, 90 deg is upright. We scale horizontally to mirror.
+      ctx.rotate(Math.PI / 2);
+      ctx.scale(-1, 1);
 
-      // Set canvas to 9:16 aspect ratio
-      const canvasWidth = 1080;
-      const canvasHeight = 1920;
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      // 3. Calculate scale to cover 1080x1920
+      // Since rotated, video.width maps to canvas height (1920)
+      const scale = Math.max(canvasHeight / video.videoWidth, canvasWidth / video.videoHeight);
+      const drawWidth = video.videoWidth * scale;
+      const drawHeight = video.videoHeight * scale;
 
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Draw the cropped video feed to canvas at 9:16 ratio
-        ctx.drawImage(
-          video,
-          sourceX, sourceY, sourceWidth, sourceHeight,  // Source crop
-          0, 0, canvasWidth, canvasHeight               // Destination
-        );
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        const faceData = await detectFaces(video, modelsLoaded);
-        onCapture(imageData, faceData);
-      }
-    } else {
-      // For AI modes: Keep original aspect ratio
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        const faceData = await detectFaces(video, modelsLoaded);
-        onCapture(imageData, faceData);
-      }
+      // 4. DrawCentered
+      ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+
+      ctx.restore();
+
+      const imageData = canvas.toDataURL('image/jpeg', 0.9);
+      // Important: Detect faces on the upright canvas for accuracy
+      const faceData = await detectFaces(canvas, modelsLoaded);
+      onCapture(imageData, faceData);
     }
     setIsDetecting(false);
   }, [era, modelsLoaded, onCapture, isDetecting]);
@@ -256,14 +238,19 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
   return (
     <div className="h-full w-full bg-black relative flex flex-col">
-      {/* Video Feed - Full Screen Portrait */}
-      <div className="absolute inset-0 z-0">
+      {/* Video Feed - Full Screen Portrait with Booth Rotation */}
+      <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-black">
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className="w-full h-full object-cover transform -scale-x-100"
+          className="absolute transform rotate-[90deg] scale-x-[-1] object-cover"
+          style={{
+            width: '100vh',
+            height: '100vw',
+            maxWidth: 'none'
+          }}
         />
         <canvas ref={canvasRef} className="hidden" />
       </div>
