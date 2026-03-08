@@ -69,7 +69,33 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
         // Set Source
         const source = createMediaStreamSource(stream);
+        
+        // Log stream settings
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        console.log(`[CameraKit] Input stream resolution: ${settings.width}x${settings.height}`);
+
         await currentSession.setSource(source);
+
+        // EXPLICITLY set render size on BOTH source and session to ensure high quality UI/Text
+        // This MUST be called after setSource, otherwise it throws an "not attached" error
+        if (source.setRenderSize) {
+          await source.setRenderSize(1080, 1920);
+          console.log(`[CameraKit] Source render size set to 1080x1920`);
+        }
+        
+        // Some SDK versions support setRenderSize on the session as well
+        if ((currentSession as any).setRenderSize) {
+          (currentSession as any).setRenderSize(1080, 1920);
+          console.log(`[CameraKit] Session render size set to 1080x1920`);
+        }
+
+        // Ensure canvas width/height hasn't been reset by CameraKit
+        if (canvasRef.current.width !== 1080 || canvasRef.current.height !== 1920) {
+          console.warn(`[CameraKit] Canvas was resized to ${canvasRef.current.width}x${canvasRef.current.height}, restoring to 1080x1920`);
+          canvasRef.current.width = 1080;
+          canvasRef.current.height = 1920;
+        }
 
         currentSession.play();
 
@@ -173,7 +199,18 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       }
 
       const imageSource = createImageSource(img);
+      
       await session.setSource(imageSource);
+      
+      // Enforce high resolution for image source as well - must be AFTER setSource
+      if (imageSource.setRenderSize) {
+        await imageSource.setRenderSize(1080, 1920);
+      }
+
+      if ((session as any).setRenderSize) {
+        (session as any).setRenderSize(1080, 1920);
+      }
+
       session.play();
       setSourceMode('image');
     } catch (err) {
@@ -194,7 +231,18 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       streamRef.current = stream;
 
       const source = createMediaStreamSource(stream);
+      
       await session.setSource(source);
+      
+      // Enforce high resolution - must be AFTER setSource
+      if (source.setRenderSize) {
+        await source.setRenderSize(1080, 1920);
+      }
+
+      if ((session as any).setRenderSize) {
+        (session as any).setRenderSize(1080, 1920);
+      }
+
       session.play();
       setSourceMode('camera');
       setUploadedImageSrc(null);
