@@ -26,7 +26,7 @@ const App: React.FC = () => {
     setCurrentScreen(AppScreen.CAMERA);
   };
 
-  const handleCapture = async (imageSrc: string, faceData: FaceDetectionResult) => {
+  const handleCapture = async (_: string, faceData: FaceDetectionResult) => {
     if (!selectedEra) return;
 
     setFaceDetectionResult(faceData);
@@ -42,18 +42,10 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
-        if (selectedEra.id === EraId.SNAP_A_MEMORY) {
-          // "Snap a Memory" mode: Skip AI generation, just use the original photo
-          resultImage = imageSrc;
-          setGeneratedPrompt('Snap a Memory (No AI Prompt)');
-          // Small artificial delay for consistent UX
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } else {
-          // Historical eras: Run Gemini AI transformation
-          const result = await generateHistoricalImage(imageSrc, selectedEra, faceData);
-          resultImage = result.image;
-          setGeneratedPrompt(result.prompt);
-        }
+        // Historical eras: Run Gemini AI transformation (no source image needed)
+        const result = await generateHistoricalImage(selectedEra, faceData);
+        resultImage = result.image;
+        setGeneratedPrompt(result.prompt);
 
         // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
         const stampedImage = await applyEraStamp(resultImage, selectedEra);

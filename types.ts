@@ -11,7 +11,6 @@ export enum EraId {
   COPTIC_EGYPT = 'COPTIC_EGYPT',
   ISLAMIC_EGYPT = 'ISLAMIC_EGYPT',
   MODERN_EGYPT = 'MODERN_EGYPT',
-  SNAP_A_MEMORY = 'SNAP_A_MEMORY',
 }
 
 export interface Scenery {

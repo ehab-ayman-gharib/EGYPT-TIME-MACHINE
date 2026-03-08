@@ -41,12 +41,10 @@ export interface GenerationResult {
 }
 
 export const generateHistoricalImage = async (
-  base64Image: string,
   era: EraData,
   faceData: FaceDetectionResult
 ): Promise<GenerationResult> => {
   const ai = getAiClient();
-  const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
   // 1. Calculate Group Description
   let subjectDescription = "";
@@ -55,15 +53,15 @@ export const generateHistoricalImage = async (
   const COMPANIONS = [
     {
       name: "QUEEN NEFERTITI",
-      description: "the legendary Queen Nefertiti, recognizable by her iconic tall, flat-topped blue cap crown (Nemes), a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen sheath gown. She should have her distinct regal facial features and traditional Egyptian kohl eye makeup."
+      description: "the legendary Queen Nefertiti in a tight waist-up portrait, recognizable by her iconic tall, flat-topped blue cap crown, a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen bodice. She has sharp regal facial features and traditional Egyptian kohl eye makeup."
     },
     {
       name: "PHARAOH THUTMOSE III",
-      description: "the great warrior Pharaoh Thutmose III, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra, a broad gold chest collar, and a stiff pleated royal kilt with a golden belt. He stands with a powerful and majestic presence."
+      description: "the great warrior Pharaoh Thutmose III in a chest-up portrait, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra and a broad gold chest collar. He has a powerful and majestic presence focusing on his face and torso."
     },
     {
       name: "THE GODDESS ISIS",
-      description: "the divine Goddess Isis, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting sheath dress adorned with gold beads and carries a golden Ankh."
+      description: "the divine Goddess Isis in a cinematic waist-up portrait, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting bodice adorned with gold beads."
     }
   ];
 
@@ -128,14 +126,14 @@ export const generateHistoricalImage = async (
   if (includeCharacter) {
     const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
     prompt = `
-    A magnificent cinematic duo portrait set in ${scene.prompt}. 
-    The photograph features two individuals standing side-by-side in a shared moment:
+    A magnificent cinematic duo waist-up portrait set in ${scene.prompt}. 
+    The photograph features two individuals in a shared moment, tightly framed from the waist up:
     
-    1. THE USER: A person from the provided photo, transformed into a historical figure of ${era.name} Egypt wearing ${clothingDescription}. Their facial features and identity MUST be perfectly preserved.
+    1. THE PERSON: A figure of ${era.name} Egypt wearing ${clothingDescription}. 
     2. THE COMPANION: ${companion.description}
     
     COMPOSITION:
-    They should be standing gracefully side-by-side or shoulder-to-shoulder, integrated into the same physical space with cohesive lighting and shadows. This should look like a professional, high-quality historical photograph.
+    They should be positioned gracefully side-by-side, tightly framed from the chest up, integrated into the same physical space with cohesive lighting and shadows. DO NOT SHOW LEGS OR FEET.
     Absolutely no modern technology, cameras, or mobile phones.
     
     ${IDENTITY_PRESERVATION_GUIDE}
@@ -145,8 +143,8 @@ export const generateHistoricalImage = async (
     prompt = `
     ${SHARED_PROMPT_INSTRUCTIONS}
     
-    INPUT: A photo of ${subjectDescription}.
-    TASK: Place them into ${scene.prompt} during the ${era.name} era.
+    SCENE: A scene featuring ${subjectDescription}.
+    LOCATION: ${scene.prompt} during the ${era.name} era.
     CLOTHING: ${clothingDescription}. 
     
     STYLE: Professional cinematic photography, 9:16 portrait.
@@ -187,12 +185,6 @@ export const generateHistoricalImage = async (
       contents: [
         {
           parts: [
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: cleanBase64
-              }
-            },
             { text: prompt }
           ]
         }
