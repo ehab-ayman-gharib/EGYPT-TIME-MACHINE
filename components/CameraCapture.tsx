@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronLeft, ImagePlus, Camera } from 'lucide-react';
 import {
   bootstrapCameraKit,
   createMediaStreamSource,
+  createImageSource,
   CameraKitSession,
 } from '@snap/camera-kit';
 import { CAMERAKIT_CONFIG } from '../services/camerakitConfig';
@@ -17,12 +18,16 @@ interface CameraCaptureProps {
 
 export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, onBack, isProcessing = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [session, setSession] = useState<CameraKitSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [sourceMode, setSourceMode] = useState<'camera' | 'image'>('camera');
+  const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
 
   // Initialize CameraKit
   useEffect(() => {
@@ -59,9 +64,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           },
         });
 
+        // Store stream ref so we can switch back to it later
+        streamRef.current = stream;
+
         // Set Source
         const source = createMediaStreamSource(stream);
-        currentSession.setSource(source);
+        await currentSession.setSource(source);
 
         currentSession.play();
 
@@ -142,6 +150,59 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     setCountdown(3);
   };
 
+  // Switch lens source to an uploaded image
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+
+    const objectUrl = URL.createObjectURL(file);
+    setUploadedImageSrc(objectUrl);
+
+    const img = new Image();
+    img.src = objectUrl;
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Failed to load image'));
+    });
+
+    try {
+      // Stop live camera stream tracks to free the camera
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+
+      const imageSource = createImageSource(img);
+      await session.setSource(imageSource);
+      session.play();
+      setSourceMode('image');
+    } catch (err) {
+      console.error('[CameraKit] Failed to set image source:', err);
+    }
+
+    // Reset file input so the same file can be re-selected
+    e.target.value = '';
+  }, [session]);
+
+  // Switch lens source back to live camera
+  const handleSwitchToCamera = useCallback(async () => {
+    if (!session) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+      });
+      streamRef.current = stream;
+
+      const source = createMediaStreamSource(stream);
+      await session.setSource(source);
+      session.play();
+      setSourceMode('camera');
+      setUploadedImageSrc(null);
+    } catch (err) {
+      console.error('[CameraKit] Failed to switch back to camera:', err);
+    }
+  }, [session]);
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-900">
@@ -204,6 +265,53 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         </div>
       )}
 
+      {/* Bottom Source Toolbar */}
+      {!isProcessing && !isInitializing && (
+        <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-4 px-6 pb-8 pt-4 bg-gradient-to-t from-black/70 to-transparent">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageUpload}
+          />
+
+          {sourceMode === 'camera' ? (
+            // Show upload-image button while in camera mode
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-white"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              }}
+              title="Upload an image to use as the lens source"
+            >
+              <ImagePlus size={18} />
+              <span>Upload Image</span>
+            </button>
+          ) : (
+            // Show switch-to-camera button while in image mode
+            <button
+              onClick={handleSwitchToCamera}
+              className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-white"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,200,0,0.25), rgba(255,200,0,0.10))',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,200,0,0.4)',
+                boxShadow: '0 4px 20px rgba(255,180,0,0.2)',
+              }}
+              title="Switch back to live camera"
+            >
+              <Camera size={18} />
+              <span>Use Camera</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
