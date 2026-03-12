@@ -20,6 +20,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rotationFrameIdRef = useRef<number | null>(null);
   const [session, setSession] = useState<CameraKitSession | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -28,6 +30,62 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [isCapturing, setIsCapturing] = useState(false);
   const [sourceMode, setSourceMode] = useState<'camera' | 'image'>('camera');
   const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
+
+  // Helper: create a rotated + mirrored stream from a raw camera stream
+  // Draws each frame from the landscape camera onto an offscreen canvas rotated 90° CW and mirrored,
+  // then returns a new MediaStream via captureStream() that is already portrait-oriented.
+  const createRotatedStream = useCallback((rawStream: MediaStream): MediaStream => {
+    const videoTrack = rawStream.getVideoTracks()[0];
+    const settings = videoTrack.getSettings();
+    const srcW = settings.width || 1920;
+    const srcH = settings.height || 1080;
+
+    // After 90° rotation: output width = srcH, output height = srcW
+    const outW = srcH; // e.g. 1080
+    const outH = srcW; // e.g. 1920
+
+    // Create or reuse offscreen canvas
+    if (!offscreenCanvasRef.current) {
+      offscreenCanvasRef.current = document.createElement('canvas');
+    }
+    const offCanvas = offscreenCanvasRef.current;
+    offCanvas.width = outW;
+    offCanvas.height = outH;
+    const ctx = offCanvas.getContext('2d')!;
+
+    // Create a hidden video element to read frames from the raw stream
+    const video = document.createElement('video');
+    video.srcObject = rawStream;
+    video.muted = true;
+    video.playsInline = true;
+    video.play();
+
+    // Cancel any previous render loop
+    if (rotationFrameIdRef.current !== null) {
+      cancelAnimationFrame(rotationFrameIdRef.current);
+    }
+
+    const drawFrame = () => {
+      if (video.readyState >= video.HAVE_CURRENT_DATA) {
+        ctx.save();
+        ctx.clearRect(0, 0, outW, outH);
+        // Move origin to center, rotate 90° CW, mirror horizontally
+        ctx.translate(outW / 2, outH / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.scale(-1, 1); // mirror for selfie
+        // Draw the video centered (remember: after rotation, axes are swapped)
+        ctx.drawImage(video, -srcW / 2, -srcH / 2, srcW, srcH);
+        ctx.restore();
+      }
+      rotationFrameIdRef.current = requestAnimationFrame(drawFrame);
+    };
+    drawFrame();
+
+    // Capture the offscreen canvas as a MediaStream
+    const rotatedStream = (offCanvas as any).captureStream(30) as MediaStream;
+    console.log(`[CameraKit] Rotated stream created: ${outW}x${outH} from ${srcW}x${srcH}`);
+    return rotatedStream;
+  }, []);
 
   // Initialize CameraKit
   useEffect(() => {
@@ -55,25 +113,28 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         });
         setSession(currentSession);
 
-        // Get Camera Stream with more standard constraints
+        // Get Camera Stream — request landscape since most webcams are landscape
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'user',
-            width: { ideal: 1080 },
-            height: { ideal: 1920 },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
           },
         });
 
-        // Store stream ref so we can switch back to it later
+        // Store raw stream ref so we can stop it on cleanup
         streamRef.current = stream;
 
-        // Set Source
-        const source = createMediaStreamSource(stream);
-        
-        // Log stream settings
+        // Log raw stream settings
         const videoTrack = stream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
-        console.log(`[CameraKit] Input stream resolution: ${settings.width}x${settings.height}`);
+        console.log(`[CameraKit] Raw camera resolution: ${settings.width}x${settings.height}`);
+
+        // Create a rotated stream (landscape → portrait) to feed to CameraKit
+        const rotatedStream = createRotatedStream(stream);
+
+        // Set Source using the rotated stream
+        const source = createMediaStreamSource(rotatedStream);
 
         await currentSession.setSource(source);
 
@@ -83,7 +144,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           await source.setRenderSize(1080, 1920);
           console.log(`[CameraKit] Source render size set to 1080x1920`);
         }
-        
+
         // Some SDK versions support setRenderSize on the session as well
         if ((currentSession as any).setRenderSize) {
           (currentSession as any).setRenderSize(1080, 1920);
@@ -116,6 +177,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     init();
 
     return () => {
+      // Stop rotation render loop
+      if (rotationFrameIdRef.current !== null) {
+        cancelAnimationFrame(rotationFrameIdRef.current);
+        rotationFrameIdRef.current = null;
+      }
       if (currentSession) {
         currentSession.pause();
         currentSession.destroy();
@@ -199,9 +265,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       }
 
       const imageSource = createImageSource(img);
-      
+
       await session.setSource(imageSource);
-      
+
       // Enforce high resolution for image source as well - must be AFTER setSource
       if (imageSource.setRenderSize) {
         await imageSource.setRenderSize(1080, 1920);
@@ -225,15 +291,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const handleSwitchToCamera = useCallback(async () => {
     if (!session) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+      const rawStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1080 } },
       });
-      streamRef.current = stream;
+      streamRef.current = rawStream;
 
-      const source = createMediaStreamSource(stream);
-      
+      // Rotate the stream before feeding to CameraKit
+      const rotatedStream = createRotatedStream(rawStream);
+      const source = createMediaStreamSource(rotatedStream);
+
       await session.setSource(source);
-      
+
       // Enforce high resolution - must be AFTER setSource
       if (source.setRenderSize) {
         await source.setRenderSize(1080, 1920);
@@ -249,7 +317,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     } catch (err) {
       console.error('[CameraKit] Failed to switch back to camera:', err);
     }
-  }, [session]);
+  }, [session, createRotatedStream]);
 
   if (error) {
     return (
