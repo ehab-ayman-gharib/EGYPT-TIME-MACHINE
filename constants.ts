@@ -136,7 +136,7 @@ export const ERAS: EraData[] = [
     frames: [
       "./Frames/Old-Egyptian/1.png"
     ],
-    lensId: "21ff29e5-82bb-47ba-a7b7-ab9269d5b61c"
+    lensId: "71b7e135-42e1-4bd2-a03d-cef0c3d50b37"
   },
   {
     id: EraId.COPTIC_EGYPT,
@@ -237,7 +237,7 @@ export const ERAS: EraData[] = [
     frames: [
       "./Frames/Coptic/1.png"
     ],
-    lensId: "6319ba4e-c98e-4789-a9ca-9d77c5d17d55"
+    lensId: "71b7e135-42e1-4bd2-a03d-cef0c3d50b37"
   },
   {
     id: EraId.ISLAMIC_EGYPT,
@@ -307,7 +307,7 @@ export const ERAS: EraData[] = [
     frames: [
       "./Frames/Islamic/1.png"
     ],
-    lensId: "9ed04b81-fe59-4f95-8fc5-2592d96f847e"
+    lensId: "71b7e135-42e1-4bd2-a03d-cef0c3d50b37"
   },
   {
     id: EraId.MODERN_EGYPT,
@@ -338,7 +338,7 @@ export const ERAS: EraData[] = [
       "./Frames/Modern-Egypt/1.png",
       "./Frames/Modern-Egypt/2.png"
     ],
-    lensId: "21ff29e5-82bb-47ba-a7b7-ab9269d5b61c"
+    lensId: "71b7e135-42e1-4bd2-a03d-cef0c3d50b37"
   },
   {
     id: EraId.SNAP_A_MEMORY,
@@ -351,6 +351,7 @@ export const ERAS: EraData[] = [
     ],
     frames: [
       "./Frames/Modern-Egypt/1.png"
-    ]
+    ],
+    lensId: "71b7e135-42e1-4bd2-a03d-cef0c3d50b37"
   }
 ];

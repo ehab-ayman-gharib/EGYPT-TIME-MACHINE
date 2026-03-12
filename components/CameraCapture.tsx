@@ -166,9 +166,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
         currentSession.play();
 
-        // Always use default lens for now as requested
-        if (CAMERAKIT_CONFIG.DEFAULT_LENS_ID) {
-          const lens = await cameraKit.lensRepository.loadLens(CAMERAKIT_CONFIG.DEFAULT_LENS_ID, CAMERAKIT_CONFIG.GROUP_ID);
+        // Load the era-specific lens, or fall back to default
+        const lensIdToLoad = era?.lensId || CAMERAKIT_CONFIG.DEFAULT_LENS_ID;
+        if (lensIdToLoad) {
+          console.log(`[CameraKit] Loading lens: ${lensIdToLoad} (era: ${era?.name || 'default'})`);
+          const lens = await cameraKit.lensRepository.loadLens(lensIdToLoad, CAMERAKIT_CONFIG.GROUP_ID);
           await currentSession.applyLens(lens);
         }
 
