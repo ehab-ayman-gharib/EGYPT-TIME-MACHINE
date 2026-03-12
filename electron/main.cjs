@@ -182,6 +182,17 @@ function findBestPrinter(configuredName, availablePrinters) {
         return fuzzyMatches[0].name;
     }
 
+    // Try matching by stripping spaces, underscores, and dashes (macOS CUPS queue names often use underscores)
+    const normalize = (name) => name.replace(/[\s_-]+/g, '').toLowerCase();
+    const normalizedConfigured = normalize(configuredName);
+    const normalizedMatch = availablePrinters.find(
+        p => normalize(p.name).includes(normalizedConfigured) || normalizedConfigured.includes(normalize(p.name))
+    );
+    if (normalizedMatch) {
+        console.log('[Printer] Found normalized match:', normalizedMatch.name);
+        return normalizedMatch.name;
+    }
+
     const photoMatch = availablePrinters.find(
         p => p.name.toLowerCase().includes('selphy') ||
             p.name.toLowerCase().includes('dnp') ||
@@ -207,6 +218,12 @@ ipcMain.handle('get-printers', async () => {
         const printers = await win.webContents.getPrintersAsync();
         const config = getPrinterConfig();
 
+        // Resolve exact printer name (especially useful for mapping config names to macOS CUPS queue names)
+        const resolvedName = findBestPrinter(config.printerName, printers);
+        if (resolvedName) {
+            config.printerName = resolvedName;
+        }
+
         const enhancedPrinters = printers.map(p => ({
             name: p.name,
             isDefault: p.isDefault,
@@ -225,23 +242,49 @@ ipcMain.handle('get-printers', async () => {
 ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
     console.log('[Printer] Received print request');
     console.log('[Printer] Image data length:', imageSrc ? imageSrc.length : 0);
-    console.log('[Printer] Target printer:', printerName);
+    console.log('[Printer] Target printer before resolution:', printerName);
 
     return new Promise(async (resolve) => {
         const os = require('os');
         const { exec } = require('child_process');
         let tempImagePath = null;
+        
+        let resolvedPrinterName = printerName;
+        try {
+            const win = BrowserWindow.getAllWindows()[0];
+            if (win) {
+                const availablePrinters = await win.webContents.getPrintersAsync();
+                const matchedName = findBestPrinter(printerName, availablePrinters);
+                if (matchedName) {
+                    resolvedPrinterName = matchedName;
+                    console.log('[Printer] Resolved target to physical queue:', resolvedPrinterName);
+                }
+            }
+        } catch (e) {
+            console.error('[Printer] Warning: could not dynamically resolve printer queue', e);
+        }
 
         try {
             // 1. Save the image to a temporary file
             if (imageSrc.startsWith('data:')) {
                 const match = imageSrc.match(/^data:image\/(\w+);base64,/);
                 const ext = match ? match[1] : 'jpg'; // default to jpg 
-                const printFolder = app.getPath('userData');
-                tempImagePath = path.join(printFolder, `photo-print-${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`);
+                
+                // In packaged Mac apps, we MUST write to the user data folder 
+                // because /tmp is aggressively blocked by Gatekeeper/AppSandbox
+                const userDataDir = app.getPath('userData');
+                const printSpoolDir = path.join(userDataDir, 'print-spool');
+                
+                // Ensure spool dir exists
+                if (!fs.existsSync(printSpoolDir)) {
+                    fs.mkdirSync(printSpoolDir, { recursive: true });
+                }
+                
+                tempImagePath = path.join(printSpoolDir, `photo-${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`);
 
                 const base64Data = imageSrc.replace(/^data:image\/\w+;base64,/, '');
                 fs.writeFileSync(tempImagePath, Buffer.from(base64Data, 'base64'));
+                
                 console.log('[Printer] Saved image to:', tempImagePath);
             } else {
                 console.error('[Printer] Image source is not a data URL');
@@ -258,7 +301,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                 const psScript = `
 Add-Type -AssemblyName System.Drawing
 $imgPath = "${tempImagePath}"
-$printerName = "${printerName}"
+$printerName = "${resolvedPrinterName}"
 
 $img = [System.Drawing.Image]::FromFile($imgPath)
 $doc = New-Object System.Drawing.Printing.PrintDocument
@@ -295,49 +338,68 @@ $img.Dispose()
                 // Encode to UTF-16LE Base64 for powershell to execute invisibly without escaping path issues
                 const encodedScript = Buffer.from(psScript, 'utf16le').toString('base64');
                 printCommand = `powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand ${encodedScript}`;
-
             } else if (process.platform === 'darwin') {
-                // macOS: Use lp command
-                printCommand = `lp -d "${printerName}" -o fit-to-page -o PageSize=dnp4x6 "${tempImagePath}"`;
-            } else {
-                // Linux/Other: Basic lp command
-                printCommand = `lp -d "${printerName}" -o fit-to-page "${tempImagePath}"`;
-            }
-
-            console.log('[Printer] Executing Print command:', printCommand);
-
-            exec(printCommand, (error, stdout, stderr) => {
-                console.log('[Printer] Print command completed');
-
-                if (error) {
-                    console.error('[Printer] Print command error:', error);
-                    console.error('[Printer] stderr:', stderr);
-
-                    // Cleanup
-                    try {
-                        if (tempImagePath && fs.existsSync(tempImagePath)) {
-                            fs.unlinkSync(tempImagePath);
-                        }
-                    } catch (e) { }
-
-                    resolve({ success: false, failureReason: error.message });
-                } else {
-                    console.log('[Printer] Print command successful');
-                    console.log('[Printer] stdout:', stdout);
-
-                    // Cleanup after a delay
-                    setTimeout(() => {
-                        try {
-                            if (tempImagePath && fs.existsSync(tempImagePath)) {
-                                fs.unlinkSync(tempImagePath);
-                                console.log('[Printer] Cleaned up temp file');
-                            }
-                        } catch (e) { }
-                    }, 10000); // Increased delay to 10s for consistency
-
-                    resolve({ success: true });
+                // macOS: Use execFile to avoid quoting/shell escaping issues with paths
+                // This is much more robust for paths like "Application Support/egypt's-time-machine"
+                const args = [];
+                if (resolvedPrinterName) {
+                    args.push('-d', resolvedPrinterName);
                 }
-            });
+                args.push('-o', 'fit-to-page');
+                args.push('-o', 'PageSize=dnp4x6');
+                args.push(tempImagePath);
+
+                console.log('[Printer] Executing /usr/bin/lp with args:', args);
+
+                const { execFile } = require('child_process');
+                execFile('/usr/bin/lp', args, (error, stdout, stderr) => {
+                    console.log('[Printer] Mac Print Command completed');
+                    if (error) {
+                        console.error('[Printer] Mac Print Error:', error);
+                        console.error('[Printer] Mac stderr:', stderr);
+                        
+                        // Cleanup
+                        try { if (tempImagePath && fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath); } catch (e) { }
+                        
+                        resolve({ success: false, failureReason: error.message });
+                    } else {
+                        console.log('[Printer] Mac Print successful');
+                        
+                        // Cleanup after delay
+                        setTimeout(() => {
+                            try { if (tempImagePath && fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath); } catch (e) { }
+                        }, 10000);
+
+                        resolve({ success: true });
+                    }
+                });
+            } else {
+                // Windows/Linux: Use standard exec for complex shell-based or PS commands
+                console.log('[Printer] Executing Print command:', printCommand);
+
+                exec(printCommand, (error, stdout, stderr) => {
+                    console.log('[Printer] Native Print Command completed');
+
+                    if (error) {
+                        console.error('[Printer] Native Print Error:', error);
+                        console.error('[Printer] Native stderr:', stderr);
+
+                        // Cleanup
+                        try { if (tempImagePath && fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath); } catch (e) { }
+
+                        resolve({ success: false, failureReason: error.message });
+                    } else {
+                        console.log('[Printer] Native Print successful');
+
+                        // Cleanup after delay
+                        setTimeout(() => {
+                            try { if (tempImagePath && fs.existsSync(tempImagePath)) fs.unlinkSync(tempImagePath); } catch (e) { }
+                        }, 10000);
+
+                        resolve({ success: true });
+                    }
+                });
+            }
 
         } catch (err) {
             console.error('[Printer] Exception in print handler:', err);
