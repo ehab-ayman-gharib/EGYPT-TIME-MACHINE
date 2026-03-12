@@ -1,8 +1,10 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, session } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 
 let mainWindow = null;
+let staticServerPort = null;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -12,9 +14,17 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             autoplayPolicy: 'no-user-gesture-required',
+            webSecurity: false,
         },
         fullscreen: true,
         autoHideMenuBar: true,
+    });
+
+    // Bridge browser console to Node terminal
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+        const levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR'];
+        const levelStr = levels[level] || 'LOG';
+        console.log(`[Browser-${levelStr}] ${message}`);
     });
 
     mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
@@ -35,7 +45,66 @@ function createWindow() {
         mainWindow.loadURL('http://localhost:3000');
         mainWindow.webContents.openDevTools();
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        // Serve dist via a local HTTP server instead of file://
+        // CameraKit requires an HTTP origin (file:// breaks WASM loading & API calls)
+        const distDir = path.join(__dirname, '../dist');
+
+        const mimeTypes = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.mjs': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.wasm': 'application/wasm',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.mp3': 'audio/mpeg',
+            '.wav': 'audio/wav',
+            '.webp': 'image/webp',
+        };
+
+        const server = http.createServer((req, res) => {
+            let filePath = path.join(distDir, req.url === '/' ? 'index.html' : req.url);
+            // Remove query strings
+            filePath = filePath.split('?')[0];
+
+            const ext = path.extname(filePath).toLowerCase();
+            const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    // If file not found, serve index.html (SPA fallback)
+                    fs.readFile(path.join(distDir, 'index.html'), (err2, fallbackData) => {
+                        if (err2) {
+                            res.writeHead(404);
+                            res.end('Not Found');
+                        } else {
+                            res.writeHead(200, { 'Content-Type': 'text/html' });
+                            res.end(fallbackData);
+                        }
+                    });
+                } else {
+                    res.writeHead(200, { 'Content-Type': contentType });
+                    res.end(data);
+                }
+            });
+        });
+
+        server.listen(0, '127.0.0.1', () => {
+            staticServerPort = server.address().port;
+            console.log(`[Electron] Local HTTP server running at http://127.0.0.1:${staticServerPort}`);
+            mainWindow.loadURL(`http://127.0.0.1:${staticServerPort}/index.html`);
+            mainWindow.webContents.openDevTools({ mode: 'detach' });
+        });
     }
 
     mainWindow.webContents.on('did-finish-load', async () => {
@@ -247,7 +316,24 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
     });
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    // Rewrite request headers for Snap endpoints to pass CameraKit API Token validation
+    const filter = { urls: ['https://*/*', 'http://*/*'] };
+    const ALLOWED_ORIGIN = 'https://127.0.0.1'; // The Origin whitelisted in Snap AR Portal
+    session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+        try {
+            const reqUrl = details.url || '';
+            const isSnapApi = /(snapar|snapchat|snapkit|sc-cdn|sc-prod)\.(com|net)/i.test(reqUrl);
+            if (isSnapApi) {
+                details.requestHeaders['Origin'] = ALLOWED_ORIGIN;
+                details.requestHeaders['Referer'] = ALLOWED_ORIGIN + '/';
+            }
+        } catch {}
+        callback({ requestHeaders: details.requestHeaders });
+    });
+
+    createWindow();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

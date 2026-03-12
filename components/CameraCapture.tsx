@@ -169,15 +169,21 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         // Load the era-specific lens, or fall back to default
         const lensIdToLoad = era?.lensId || CAMERAKIT_CONFIG.DEFAULT_LENS_ID;
         if (lensIdToLoad) {
-          console.log(`[CameraKit] Loading lens: ${lensIdToLoad} (era: ${era?.name || 'default'})`);
-          const lens = await cameraKit.lensRepository.loadLens(lensIdToLoad, CAMERAKIT_CONFIG.GROUP_ID);
-          await currentSession.applyLens(lens);
+          try {
+            console.log(`[CameraKit] Loading lens: ${lensIdToLoad} (era: ${era?.name || 'default'})`);
+            const lens = await cameraKit.lensRepository.loadLens(lensIdToLoad, CAMERAKIT_CONFIG.GROUP_ID);
+            await currentSession.applyLens(lens);
+            console.log(`[CameraKit] Lens applied successfully`);
+          } catch (lensErr: any) {
+            console.warn(`[CameraKit] Failed to load lens (camera will work without it):`, lensErr?.message || lensErr);
+          }
         }
 
         setIsInitializing(false);
-      } catch (err) {
-        setError("Failed to initialize CameraKit or camera access denied.");
-        console.error(err);
+      } catch (err: any) {
+        console.error('[CameraKit] Initialization failed:', err?.message || err);
+        console.error('[CameraKit] Full error:', err);
+        setError(`Failed to initialize CameraKit: ${err?.message || 'camera access denied'}`);
         setIsInitializing(false);
       }
     };
