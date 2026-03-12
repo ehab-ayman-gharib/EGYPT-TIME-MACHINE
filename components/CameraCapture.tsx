@@ -626,53 +626,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         </div>
       )}
 
-      {/* Bottom Source Toolbar */}
-      {!isProcessing && !isInitializing && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-4 px-6 pb-8 pt-4 bg-gradient-to-t from-black/70 to-transparent">
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleImageUpload}
-          />
 
-          {sourceMode === 'camera' ? (
-            // Show upload-image button while in camera mode
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-white"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              }}
-              title="Upload an image to use as the lens source"
-            >
-              <ImagePlus size={18} />
-              <span>Upload Image</span>
-            </button>
-          ) : (
-            // Show switch-to-camera button while in image mode
-            <button
-              onClick={handleSwitchToCamera}
-              className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold text-white"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,200,0,0.25), rgba(255,200,0,0.10))',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,200,0,0.4)',
-                boxShadow: '0 4px 20px rgba(255,180,0,0.2)',
-              }}
-              title="Switch back to live camera"
-            >
-              <Camera size={18} />
-              <span>Use Camera</span>
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 };
