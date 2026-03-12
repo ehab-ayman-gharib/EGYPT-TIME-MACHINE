@@ -325,7 +325,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     }
   }, [session, createRotatedStream]);
 
-  // Capture the CameraKit canvas as a 1200x1800 (2:3) image
+  // Capture only the rectangular frame region from the CameraKit canvas, scaled to 1200x1800
   const captureFramedImage = useCallback((): string | null => {
     if (!canvasRef.current) return null;
 
@@ -333,27 +333,24 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     const srcW = srcCanvas.width;  // 1080
     const srcH = srcCanvas.height; // 1920
 
-    // Target: 1200x1800 (2:3 ratio)
+    // ─── FRAME CROP REGION (percentage of canvas) ───
+    // Adjust these values to match exactly where the frame sits on your lens.
+    // Use the browser DevTools to fine-tune if needed.
+    const frameLeft = 0.095;  // 5% from left
+    const frameTop = 0.11;  // 6% from top
+    const frameRight = 0.095;  // 5% from right
+    const frameBottom = 0.25;  // 22% from bottom (buttons area below frame)
+
+    const cropX = Math.round(srcW * frameLeft);
+    const cropY = Math.round(srcH * frameTop);
+    const cropW = Math.round(srcW * (1 - frameLeft - frameRight));
+    const cropH = Math.round(srcH * (1 - frameTop - frameBottom));
+
+    console.log(`[Capture] Frame crop region: x=${cropX}, y=${cropY}, w=${cropW}, h=${cropH} (from ${srcW}x${srcH})`);
+
+    // Output: 1200x1800 (2:3)
     const targetW = 1200;
     const targetH = 1800;
-    const targetRatio = targetW / targetH; // 0.667
-    const srcRatio = srcW / srcH;
-
-    // Compute crop region from source to match 2:3 aspect ratio
-    let cropX = 0, cropY = 0, cropW = srcW, cropH = srcH;
-    if (srcRatio < targetRatio) {
-      // Source is taller — crop top/bottom
-      cropW = srcW;
-      cropH = srcW / targetRatio;
-      cropX = 0;
-      cropY = (srcH - cropH) / 2;
-    } else {
-      // Source is wider — crop left/right
-      cropH = srcH;
-      cropW = srcH * targetRatio;
-      cropX = (srcW - cropW) / 2;
-      cropY = 0;
-    }
 
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = targetW;
@@ -363,7 +360,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
     ctx.drawImage(srcCanvas, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
     const imageData = captureCanvas.toDataURL('image/jpeg', 0.95);
-    console.log(`[Capture] Framed image captured: ${targetW}x${targetH} from crop (${Math.round(cropX)},${Math.round(cropY)},${Math.round(cropW)},${Math.round(cropH)})`);
+    console.log(`[Capture] Framed image captured: ${targetW}x${targetH}`);
     return imageData;
   }, []);
 
