@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft, ImagePlus, Camera } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronLeft, ImagePlus, Camera, Loader2, Printer, QrCode, X, CheckCircle2, XCircle } from 'lucide-react';
 import {
   bootstrapCameraKit,
   createMediaStreamSource,
@@ -30,6 +30,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [isCapturing, setIsCapturing] = useState(false);
   const [sourceMode, setSourceMode] = useState<'camera' | 'image'>('camera');
   const [uploadedImageSrc, setUploadedImageSrc] = useState<string | null>(null);
+
+  // QR Code & Print state
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showQrOverlay, setShowQrOverlay] = useState(false);
+  const [printStatus, setPrintStatus] = useState<'idle' | 'printing' | 'success' | string>('idle');
 
   // Helper: create a rotated + mirrored stream from a raw camera stream
   // Draws each frame from the landscape camera onto an offscreen canvas rotated 90° CW and mirrored,
@@ -319,6 +325,132 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     }
   }, [session, createRotatedStream]);
 
+  // Capture the CameraKit canvas as a 1200x1800 (2:3) image
+  const captureFramedImage = useCallback((): string | null => {
+    if (!canvasRef.current) return null;
+
+    const srcCanvas = canvasRef.current;
+    const srcW = srcCanvas.width;  // 1080
+    const srcH = srcCanvas.height; // 1920
+
+    // Target: 1200x1800 (2:3 ratio)
+    const targetW = 1200;
+    const targetH = 1800;
+    const targetRatio = targetW / targetH; // 0.667
+    const srcRatio = srcW / srcH;
+
+    // Compute crop region from source to match 2:3 aspect ratio
+    let cropX = 0, cropY = 0, cropW = srcW, cropH = srcH;
+    if (srcRatio < targetRatio) {
+      // Source is taller — crop top/bottom
+      cropW = srcW;
+      cropH = srcW / targetRatio;
+      cropX = 0;
+      cropY = (srcH - cropH) / 2;
+    } else {
+      // Source is wider — crop left/right
+      cropH = srcH;
+      cropW = srcH * targetRatio;
+      cropX = (srcW - cropW) / 2;
+      cropY = 0;
+    }
+
+    const captureCanvas = document.createElement('canvas');
+    captureCanvas.width = targetW;
+    captureCanvas.height = targetH;
+    const ctx = captureCanvas.getContext('2d');
+    if (!ctx) return null;
+
+    ctx.drawImage(srcCanvas, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
+    const imageData = captureCanvas.toDataURL('image/jpeg', 0.95);
+    console.log(`[Capture] Framed image captured: ${targetW}x${targetH} from crop (${Math.round(cropX)},${Math.round(cropY)},${Math.round(cropW)},${Math.round(cropH)})`);
+    return imageData;
+  }, []);
+
+  // Handle Get QR Code button
+  const handleGetQRCode = useCallback(async () => {
+    if (isUploading) return;
+
+    const imageData = captureFramedImage();
+    if (!imageData) return;
+
+    setIsUploading(true);
+    setShowQrOverlay(true);
+    setQrCodeUrl(null);
+
+    try {
+      const response = await fetch(imageData);
+      const blob = await response.blob();
+
+      const formData = new FormData();
+      formData.append('image', blob, 'result.png');
+      formData.append('folder', 'kemet-mirror');
+      formData.append('metadata', JSON.stringify({
+        event: 'Cairo Airport Photobooth',
+        photobooth_id: 'kemet_mirror_1',
+        era: era?.name || 'unknown',
+      }));
+
+      const uploadResponse = await fetch('https://qr-web-api.vercel.app/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) throw new Error('Upload failed');
+
+      const data = await uploadResponse.json();
+      setQrCodeUrl(data.qrCodeUrl);
+      console.log('[QR] Upload successful, QR URL:', data.qrCodeUrl);
+    } catch (error) {
+      console.error('[QR] Error uploading image:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [isUploading, captureFramedImage, era]);
+
+  // Handle Print Photo button
+  const handlePrintPhoto = useCallback(async () => {
+    const imageData = captureFramedImage();
+    if (!imageData) return;
+
+    setPrintStatus('printing');
+
+    const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+    if (isElectron && (window as any).require) {
+      try {
+        const { ipcRenderer } = (window as any).require('electron');
+        const preferredPrinter = localStorage.getItem('preferredPrinter') || '';
+        const result = await ipcRenderer.invoke('print-image', {
+          imageSrc: imageData,
+          printerName: preferredPrinter,
+        });
+
+        if (result.success) {
+          setPrintStatus('success');
+          setTimeout(() => setPrintStatus('idle'), 3000);
+        } else {
+          setPrintStatus(`error:${result.failureReason}`);
+          setTimeout(() => setPrintStatus('idle'), 5000);
+        }
+      } catch (e) {
+        console.error('[Print] Electron print failed:', e);
+        setPrintStatus('error:Print failed');
+        setTimeout(() => setPrintStatus('idle'), 5000);
+      }
+    } else {
+      // Browser fallback print
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+      document.body.appendChild(iframe);
+      const doc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (doc) {
+        doc.write(`<html><head><style>@page{margin:0;size:4in 6in;}body{margin:0;display:flex;justify-content:center;align-items:center;background:white;}img{max-width:100%;height:auto;display:block;}</style></head><body><img src="${imageData}"/><script>window.onload=()=>{window.focus();window.print();setTimeout(()=>{window.parent.document.body.removeChild(window.frameElement);},1000);};<\/script></body></html>`);
+        doc.close();
+      }
+      setPrintStatus('idle');
+    }
+  }, [captureFramedImage]);
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-900">
@@ -338,6 +470,114 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           className="w-full h-full object-cover"
         />
       </div>
+
+      {/* Invisible overlay buttons — positioned over the lens-rendered buttons */}
+      {!isInitializing && !isProcessing && (
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          {/* Print Photo — positioned over the left lens button */}
+          <button
+            onClick={handlePrintPhoto}
+            className="pointer-events-auto absolute opacity-0"
+            style={{
+              left: '13%',
+              bottom: '18%',
+              width: '30%',
+              height: '3%',
+            }}
+            aria-label="Print Photo"
+          />
+          {/* Get QR Code — positioned over the right lens button */}
+          <button
+            onClick={handleGetQRCode}
+            className="pointer-events-auto absolute opacity-0"
+            style={{
+              right: '13%',
+              bottom: '18%',
+              width: '30%',
+              height: '3%',
+            }}
+            aria-label="Get QR Code"
+          />
+        </div>
+      )}
+
+      {/* Print Status Overlay */}
+      {printStatus !== 'idle' && (
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-[110] flex flex-col items-center justify-center">
+          <div className="bg-black/80 backdrop-blur-xl border border-yellow-500/30 p-12 rounded-full flex flex-col items-center gap-6 shadow-[0_0_100px_rgba(0,0,0,0.9)] min-w-[300px]">
+            {printStatus === 'printing' && (
+              <>
+                <div className="relative">
+                  <Printer className="text-yellow-500 animate-bounce" size={64} />
+                  <div className="absolute -inset-4 bg-yellow-500/20 blur-2xl rounded-full animate-pulse" />
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-2xl font-black text-white uppercase tracking-widest">Printing...</span>
+                  <span className="text-xs text-yellow-500/70 font-bold uppercase tracking-widest">Your photo is being prepared</span>
+                </div>
+              </>
+            )}
+            {printStatus === 'success' && (
+              <>
+                <CheckCircle2 className="text-green-500" size={64} />
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-2xl font-black text-white uppercase tracking-widest">Completed!</span>
+                  <span className="text-xs text-green-500/70 font-bold uppercase tracking-widest">Take your memory with you</span>
+                </div>
+              </>
+            )}
+            {typeof printStatus === 'string' && printStatus.startsWith('error') && (
+              <>
+                <XCircle className="text-red-500" size={64} />
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-2xl font-black text-white uppercase tracking-widest">Printer Error</span>
+                  <span className="text-xs text-red-500/70 font-bold uppercase tracking-widest text-center max-w-[250px]">
+                    {printStatus.split(':')[1] || 'Unknown error occurred'}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Overlay */}
+      {showQrOverlay && (
+        <div className="absolute inset-0 z-[120] bg-black/85 backdrop-blur-md flex items-center justify-center">
+          <div className="relative bg-slate-900/90 border border-yellow-500/30 rounded-3xl p-8 flex flex-col items-center gap-6 shadow-[0_0_80px_rgba(0,0,0,0.9)] max-w-sm w-[90%]">
+            {/* Close button */}
+            <button
+              onClick={() => { setShowQrOverlay(false); setQrCodeUrl(null); }}
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <h2 className="text-xl font-black text-yellow-500 uppercase tracking-widest">Scan QR Code</h2>
+            <p className="text-xs text-slate-400 text-center -mt-3">Scan to download your photo to your phone</p>
+
+            <div className="w-48 h-48 bg-white rounded-2xl shadow-2xl p-2 flex items-center justify-center border-2 border-yellow-600/50">
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="animate-spin text-yellow-600" size={40} />
+                  <span className="text-xs text-slate-600 font-bold uppercase">Uploading...</span>
+                </div>
+              ) : qrCodeUrl ? (
+                <img src={qrCodeUrl} alt="QR Code" draggable="false" className="w-full h-full object-contain" />
+              ) : (
+                <QrCode className="text-slate-400 opacity-20" size={48} />
+              )}
+            </div>
+
+            <button
+              onClick={() => { setShowQrOverlay(false); setQrCodeUrl(null); }}
+              className="px-8 py-3 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-xl transition-all uppercase tracking-widest text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Initializing Overlay */}
       {isInitializing && (
