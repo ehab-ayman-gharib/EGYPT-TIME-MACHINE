@@ -249,19 +249,55 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
                 return;
             }
 
-            // 2. Use Windows Shell Image Print engine
-            // This engine handles scaling and borderless printing much better than mspaint
-            // 2. Platform-specific Print Command
             let printCommand;
 
             if (process.platform === 'win32') {
-                // Windows: Use mspaint to print the native image directly to the spooler queue
-                printCommand = `mspaint /pt "${tempImagePath}" "${printerName}"`;
+                // Windows: Use a robust C#/.NET native print call via PowerShell
+                // This guarantees 0 margins, exact scaling, and auto-rotates to fit the paper 
+                // avoiding all the white border issues from mspaint
+                const psScript = `
+Add-Type -AssemblyName System.Drawing
+$imgPath = "${tempImagePath}"
+$printerName = "${printerName}"
+
+$img = [System.Drawing.Image]::FromFile($imgPath)
+$doc = New-Object System.Drawing.Printing.PrintDocument
+
+if ($printerName -ne "") {
+    $doc.PrinterSettings.PrinterName = $printerName
+}
+
+$doc.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0)
+$doc.OriginAtMargins = $false
+
+$doc.add_PrintPage({
+    param($sender, $event)
+    
+    $paperW = $event.PageSettings.PaperSize.Width
+    $paperH = $event.PageSettings.PaperSize.Height
+    
+    # Auto rotate image if paper orientation doesn't match image orientation
+    $paperHoriz = $paperW -gt $paperH
+    $imgHoriz = $img.Width -gt $img.Height
+    
+    if ($paperHoriz -ne $imgHoriz) {
+        $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate90FlipNone)
+    }
+
+    # Draw exactly bounding the paper size with zero margins
+    $rect = New-Object System.Drawing.Rectangle(0, 0, $paperW, $paperH)
+    $event.Graphics.DrawImage($img, $rect)
+})
+
+$doc.Print()
+$img.Dispose()
+`;
+                // Encode to UTF-16LE Base64 for powershell to execute invisibly without escaping path issues
+                const encodedScript = Buffer.from(psScript, 'utf16le').toString('base64');
+                printCommand = `powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand ${encodedScript}`;
+
             } else if (process.platform === 'darwin') {
                 // macOS: Use lp command
-                // -d: destination printer
-                // -o fit-to-page: scale to fit
-                // -o PageSize=dnp4x6: set specific paper size for DNP QW410
                 printCommand = `lp -d "${printerName}" -o fit-to-page -o PageSize=dnp4x6 "${tempImagePath}"`;
             } else {
                 // Linux/Other: Basic lp command
