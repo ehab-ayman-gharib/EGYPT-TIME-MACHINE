@@ -425,8 +425,31 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       try {
         const { ipcRenderer } = (window as any).require('electron');
         const preferredPrinter = localStorage.getItem('preferredPrinter') || '';
+
+        // --- Rotate the image 90 degrees to Landscape (1800x1200) for native DNP printing ---
+        const rotDataUrl = await new Promise<string>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const tempCanvas = document.createElement('canvas');
+            // Swap width and height for a 90-degree rotation (1200x1800 -> 1800x1200)
+            tempCanvas.width = img.height; 
+            tempCanvas.height = img.width; 
+            const tCtx = tempCanvas.getContext('2d');
+            if (tCtx) {
+              tCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+              // Rotate 90 degrees clockwise
+              tCtx.rotate((90 * Math.PI) / 180);
+              tCtx.drawImage(img, -img.width / 2, -img.height / 2);
+              resolve(tempCanvas.toDataURL('image/jpeg', 1.0));
+            } else {
+              resolve(imageData); // Fallback
+            }
+          };
+          img.src = imageData;
+        });
+
         const result = await ipcRenderer.invoke('print-image', {
-          imageSrc: imageData,
+          imageSrc: rotDataUrl,
           printerName: preferredPrinter,
         });
 

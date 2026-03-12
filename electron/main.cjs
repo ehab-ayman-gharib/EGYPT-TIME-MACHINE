@@ -234,10 +234,12 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 
         try {
             // 1. Save the image to a temporary file
-            const tempDir = os.tmpdir();
-            tempImagePath = path.join(tempDir, `photo-print-${Date.now()}.png`);
-
             if (imageSrc.startsWith('data:')) {
+                const match = imageSrc.match(/^data:image\/(\w+);base64,/);
+                const ext = match ? match[1] : 'jpg'; // default to jpg 
+                const printFolder = app.getPath('userData');
+                tempImagePath = path.join(printFolder, `photo-print-${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`);
+
                 const base64Data = imageSrc.replace(/^data:image\/\w+;base64,/, '');
                 fs.writeFileSync(tempImagePath, Buffer.from(base64Data, 'base64'));
                 console.log('[Printer] Saved image to:', tempImagePath);
@@ -253,8 +255,8 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
             let printCommand;
 
             if (process.platform === 'win32') {
-                // Windows: Use Shell Image Print engine
-                printCommand = `rundll32.exe C:\\WINDOWS\\system32\\shimgvw.dll,ImageView_PrintTo /pt "${tempImagePath}" "${printerName}"`;
+                // Windows: Use mspaint to print the native image directly to the spooler queue
+                printCommand = `mspaint /pt "${tempImagePath}" "${printerName}"`;
             } else if (process.platform === 'darwin') {
                 // macOS: Use lp command
                 // -d: destination printer
