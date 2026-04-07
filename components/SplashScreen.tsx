@@ -235,7 +235,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                       className="w-full h-full object-contain grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
                     />
 
-                    {/* Snap a Memory specific Camera icon overlay */}
+                    {/* Snap a Memory specific Camera icon overlay 
                     {era.id === EraId.SNAP_A_MEMORY && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <div className="bg-black/40 p-3 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform duration-500">
@@ -243,6 +243,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                         </div>
                       </div>
                     )}
+                      */}
                   </div>
                 </div>
               </div>

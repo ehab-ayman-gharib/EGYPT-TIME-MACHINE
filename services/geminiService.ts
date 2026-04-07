@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { EraData, FaceDetectionResult } from '../types';
-import { SHARED_PROMPT_INSTRUCTIONS, IDENTITY_PRESERVATION_GUIDE } from '../constants';
+import { SHARED_PROMPT_INSTRUCTIONS, IDENTITY_PRESERVATION_GUIDE, CAMERA_CONFIG } from '../constants';
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -110,33 +110,37 @@ export const generateHistoricalImage = async (
   const clothingParts: string[] = [];
 
   if (faceData.maleCount > 0) {
-    clothingParts.push(`the ${faceData.maleCount > 1 ? 'men' : 'man'} wearing ${scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)]}`);
+    const maleOutfit = scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)];
+    clothingParts.push(`${faceData.maleCount > 1 ? 'each of the men' : 'the man'} wearing a unique and distinct version of ${maleOutfit}`);
   }
   if (faceData.femaleCount > 0) {
-    clothingParts.push(`the ${faceData.femaleCount > 1 ? 'women' : 'woman'} wearing ${scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)]}`);
+    const femaleOutfit = scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)];
+    clothingParts.push(`${faceData.femaleCount > 1 ? 'each of the women' : 'the woman'} wearing a unique and distinct version of ${femaleOutfit}`);
   }
   if (faceData.childCount > 0) {
-    clothingParts.push(`the ${faceData.childCount > 1 ? 'children' : 'child'} wearing historically accurate ${era.name} child attire`);
+    clothingParts.push(`${faceData.childCount > 1 ? 'each of the children' : 'the child'} wearing unique and different historically accurate ${era.name} child attire`);
   }
 
-  const clothingDescription = clothingParts.join(", ");
+  const clothingDescription = clothingParts.join(", and ");
 
   // 3. Construct Unified Prompt
   let prompt = "";
   if (includeCharacter) {
     const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
     prompt = `
-    A magnificent cinematic duo waist-up portrait set in ${scene.prompt}. 
-    The photograph features two individuals in a shared moment, tightly framed from the waist up:
+    A magnificent cinematic duo full-body environmental portrait set in ${scene.prompt}. 
+    The photograph features two individuals in a shared moment, professionally posed in the scene:
     
     1. THE PERSON: A figure of ${era.name} Egypt wearing ${clothingDescription}. 
     2. THE COMPANION: ${companion.description}
     
     COMPOSITION:
-    They should be positioned gracefully side-by-side, tightly framed from the chest up, integrated into the same physical space with cohesive lighting and shadows. DO NOT SHOW LEGS OR FEET.
+    They should be positioned gracefully side-by-side, integrated into the same physical space with cohesive lighting and shadows.
     Absolutely no modern technology, cameras, or mobile phones.
     
     ${IDENTITY_PRESERVATION_GUIDE}
+    
+    ${CAMERA_CONFIG}
     `;
   } else {
     // Normal Group Photo or No Character
@@ -150,6 +154,8 @@ export const generateHistoricalImage = async (
     STYLE: Professional cinematic photography, 9:16 portrait.
     
     ${IDENTITY_PRESERVATION_GUIDE}
+    
+    ${CAMERA_CONFIG}
     `;
   }
 
