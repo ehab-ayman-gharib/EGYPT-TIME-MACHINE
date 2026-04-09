@@ -85,43 +85,59 @@ export const generateHistoricalImage = async (
     }
   }
 
-  // 2. Select Scene and Clothing
+  // 2. Select Scene using a Shuffled Deck approach to prevent repetition
   let sceneIdx = 0;
-  const lastScenesKey = 'extra_last_scenes';
-  const lastScenes = JSON.parse(localStorage.getItem(lastScenesKey) || '{}');
-  const lastIdx = lastScenes[era.id];
-
-  if (era.scenery.length > 1) {
-    // Try up to 10 times to get a different scene
-    for (let i = 0; i < 10; i++) {
-      sceneIdx = Math.floor(Math.random() * era.scenery.length);
-      if (sceneIdx !== lastIdx) break;
-    }
-  } else {
-    sceneIdx = 0;
+  const deckKey = `scenery_deck_${era.id}`;
+  let deck: number[] = [];
+  
+  try {
+    const savedDeck = localStorage.getItem(deckKey);
+    deck = savedDeck ? JSON.parse(savedDeck) : [];
+  } catch (e) {
+    deck = [];
   }
 
-  // Save selected scene to prevent repetition in next session
-  lastScenes[era.id] = sceneIdx;
-  localStorage.setItem(lastScenesKey, JSON.stringify(lastScenes));
+  // If deck is empty, replenish and shuffle it
+  if (!deck || deck.length === 0) {
+    deck = Array.from({ length: era.scenery.length }, (_, i) => i);
+    // Fisher-Yates shuffle
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    console.log(`[Deck] Replenished deck for ${era.id}:`, deck);
+  }
+
+  // Pick the next scene index
+  sceneIdx = deck.pop() || 0;
+  localStorage.setItem(deckKey, JSON.stringify(deck));
 
   const scene = era.scenery[sceneIdx];
-  console.log(`[Prompt Gen] Selected non-repeating scene #${sceneIdx} for era ${era.id} (last was ${lastIdx})`);
+  console.log(`[Prompt Gen] Selected scene #${sceneIdx} from deck for era ${era.id}. Remaining in deck: ${deck.length}`);
   const clothingParts: string[] = [];
 
+  const physicalTraits = ["athletic build", "slight/slender build", "average build", "broad-shouldered", "muscular build"];
+  const skinTones = ["warm olive", "bronze", "medium tan", "golden brown"];
+
   if (faceData.maleCount > 0) {
-    const maleOutfit = scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)];
-    clothingParts.push(`${faceData.maleCount > 1 ? 'each of the men' : 'the man'} wearing a unique and distinct version of ${maleOutfit}`);
+    for (let i = 0; i < faceData.maleCount; i++) {
+      const maleOutfit = scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)];
+      clothingParts.push(`Man ${faceData.maleCount > 1 ? (i + 1) : ''}: A unique individual with a ${physicalTraits[Math.floor(Math.random() * physicalTraits.length)]} and ${skinTones[Math.floor(Math.random() * skinTones.length)]} skin, wearing a full-body version of ${maleOutfit}. This person MUST be fully clothed with no bare chest.`);
+    }
   }
   if (faceData.femaleCount > 0) {
-    const femaleOutfit = scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)];
-    clothingParts.push(`${faceData.femaleCount > 1 ? 'each of the women' : 'the woman'} wearing a unique and distinct version of ${femaleOutfit}`);
+    for (let i = 0; i < faceData.femaleCount; i++) {
+      const femaleOutfit = scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)];
+      clothingParts.push(`Woman ${faceData.femaleCount > 1 ? (i + 1) : ''}: A unique individual with ${skinTones[Math.floor(Math.random() * skinTones.length)]} skin, wearing a distinct and different variation of ${femaleOutfit}`);
+    }
   }
   if (faceData.childCount > 0) {
-    clothingParts.push(`${faceData.childCount > 1 ? 'each of the children' : 'the child'} wearing unique and different historically accurate ${era.name} child attire`);
+    for (let i = 0; i < faceData.childCount; i++) {
+      clothingParts.push(`Child ${faceData.childCount > 1 ? (i + 1) : ''} wearing a unique historically accurate ${era.name} child attire, different from others in the photo.`);
+    }
   }
 
-  const clothingDescription = clothingParts.join(", and ");
+  const clothingDescription = clothingParts.sort(() => Math.random() - 0.5).join(". ");
 
   // 3. Construct Unified Prompt
   let prompt = "";
@@ -173,7 +189,7 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    temperature: 0.5,
+    temperature: 1,
     // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"

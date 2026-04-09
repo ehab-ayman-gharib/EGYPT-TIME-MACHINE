@@ -78,7 +78,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         }
 
         const formData = new FormData();
-        formData.append('image', blob, 'result.png');
+        formData.append('image', blob, 'result.jpg');
         formData.append('folder', 'kemet-mirror');
         formData.append('metadata', JSON.stringify({
           event: 'Cairo Airport Photobooth',
@@ -109,7 +109,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = imageSrc;
-    link.download = `chronolens-${era.id}-${Date.now()}.png`;
+    link.download = `chronolens-${era.id}-${Date.now()}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -192,7 +192,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         ctx.fillText('TEST PRINT', 200, 300);
       }
 
-      const testImageSrc = canvas.toDataURL('image/png');
+      const testImageSrc = canvas.toDataURL('image/jpeg');
       console.log('[ResultScreen] Test image created, length:', testImageSrc.length);
 
       const { ipcRenderer } = (window as any).require('electron');
