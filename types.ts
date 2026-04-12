@@ -14,6 +14,7 @@ export enum EraId {
 }
 
 export interface Scenery {
+  name: string;
   prompt: string;
   maleClothingIds: string[];
   femaleClothingIds: string[];
@@ -35,4 +36,5 @@ export interface FaceDetectionResult {
   femaleCount: number;
   childCount: number;
   totalPeople: number;
+  selectedSceneryIdx?: number;
 }

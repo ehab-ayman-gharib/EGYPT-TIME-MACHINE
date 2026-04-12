@@ -1,14 +1,16 @@
 import { EraData, EraId } from './types';
 
-export const SHARED_PROMPT_INSTRUCTIONS = `A hyper-realistic, high-resolution portrait-oriented photo. Every person in the image MUST be a COMPLETELY UNIQUE INDIVIDUAL with a distinct facial structure, unique facial features, a different height, a different weight/build, and a different expression. ALL FACES MUST BE PERFECTLY WELL-LIT AND COMPLETELY SHADOW-FREE, especially under any headwear or crowns. Facial features must be razor-sharp and perfectly visible. 
+export const SHARED_PROMPT_INSTRUCTIONS = `A hyper-realistic, high-resolution portrait-oriented photo. Every person in the image MUST be a COMPLETELY UNIQUE INDIVIDUAL with a distinct facial structure, unique facial features, a different height, a different weight/build, and a different expression. 
+
+MANDATORY: Generate ONLY the exact number of people described in the SCENE section below. Do NOT add any extra people, bystanders, pedestrians, tourists, or background figures of any kind. The background MUST be completely empty of any additional people.
+
+ALL FACES MUST BE PERFECTLY WELL-LIT AND COMPLETELY SHADOW-FREE, especially under any headwear or crowns. Facial features must be razor-sharp and perfectly visible. 
 
 ABSOLUTELY NO SHIRTLESS PEOPLE. Every person MUST be wearing a full upper-body garment (tunic, shirt, or dress). 
 
-SKIN TONES: Use only warm olive, light bronze, medium tan, and golden brown skin tones. ABSOLUTELY NO black skin, deep dark skin, or sub-saharan ethnic features. Faces should reflect authentic Middle Eastern and Mediterranean historical appearance.
+SKIN TONES: Use only fair olive, warm ivory, light honey, and warm wheatish skin tones. ABSOLUTELY NO black skin, deep dark skin, or sub-saharan ethnic features. Faces should reflect authentic light-to-medium Middle Eastern and Mediterranean appearance.
 
 ABSOLUTELY NO DUPLICATES. NO IDENTITY THEFT. NO CLONES. If I see two people who look even slightly similar, the image is a total failure. 
-
-EVERY MAN MUST BE COMPLETELY CLEAN-SHAVEN with absolutely NO facial hair, NO beards, NO mustaches, and NO stubble whatsoever.
 
 CLOTHING VARIETY IS MANDATORY: Even if individuals wear similar types of historical attire, their outfits MUST have different colors, different embroidery patterns, and different accessories. ABSOLUTELY NO UNIFORMS. No one should look like a copy-paste of another person. The final image should look like a diverse group of unique individuals at a modern professional photoshoot.`;
 
@@ -16,23 +18,57 @@ CLOTHING VARIETY IS MANDATORY: Even if individuals wear similar types of histori
 
 
 
-export const CAMERA_CONFIG = `CAMERA SETUP: Wide-angle 35mm focal length, sharp focus throughout. Full-body environmental portrait composition. Eye-level perspective. Even, bright professional studio-style lighting with soft shadows. ALL FACES MUST BE PERFECTLY LIT with NO shadows over the eyes or facial profiles. Facial features must be extremely clear, sharp, and high-contrast for perfect identification. The camera should capture the individuals from head to toe including their footwear, set within a spacious view of the environment.`;
+export const CAMERA_CONFIG = `CAMERA: Shot on 35mm lens, f/1.8, 8k resolution. Professional studio lighting with front-facing fill light to eliminate all shadows caused by headwear. The lighting must be perfectly balanced so that every part of every face is clearly visible, with NO dark areas under hat brims or caps. Full-body environmental portrait composition. Eye-level perspective. Even, bright professional studio-style lighting with soft shadows. ALL FACES MUST BE PERFECTLY LIT with NO shadows over the eyes or facial profiles. Facial features must be extremely clear, sharp, and high-contrast for perfect identification. The camera should capture the individuals from head to toe including their footwear, set within a spacious view of the environment.`;
 
 
 
 export const IDENTITY_PRESERVATION_GUIDE = `REQUIREMENTS:
 - AUTHENTIC LOOK: Middle Eastern / Mediterranean / Arab / North African ethnic and facial features.
-- SKIN TONES: Warm olive, medium bronze, golden brown only. ABSOLUTELY NO black or dark skin tones.
+- SKIN TONES: Fair olive, warm ivory, light honey, and warm wheatish only. ABSOLUTELY NO black or dark skin tones.
 - DIVERSITY: Every person MUST have a different height, weight, and face shape.
 - CLEAR FACES: Faces must be COMPLETELY SHADOW-FREE with sharp, well-defined features. NO harsh lighting or dark shadows allowed on any face.
 - FULLY CLOTHED: NO shirtless people. Everyone wears full tunics or dresses.
 - NO UNIFORMS: Outfits must vary significantly in color and detail for each person. Even if the garment type is the same, the execution must be unique for each individual.
-- NO FACIAL HAIR: Clean-shaven faces ONLY, no beards or mustaches.
+- NO FACIAL HAIR: Glass-smooth clean-shaven faces ONLY, no beards, mustaches, or stubble.
 - UNIQUE INDIVIDUALS: Every person must have a unique face and distinct facial structure.
+- EXACT COUNT: Generate ONLY the number of people requested. No extra figures or background bystanders allowed.
 - ABSOLUTELY NO DUPLICATES: No identical faces, no twins, and no lookalikes allowed in the same image.
 - Photorealistic, high quality, 9:16 portrait.`;
 
 
+/**
+ * MALE_WARDROBE_STYLES:
+ * Casual modern menswear utilizing high-quality Egyptian cotton and linen.
+ */
+export const MALE_WARDROBE_STYLES = [
+  "a crisp white Egyptian cotton t-shirt paired with perfectly fitted indigo denim jeans and clean white sneakers, worn with a minimalist navy blue baseball cap.",
+  "a casual navy blue premium cotton crew-neck sweater worn over charcoal tailored chinos for a modern, simple look, paired with a stylish grey textured flat cap.",
+  "a smart-casual textured grey blazer layered over a plain black luxury cotton t-shirt and charcoal trousers, topped with a matching grey linen baseball cap.",
+  "a relaxed olive green linen button-down shirt, worn unbuttoned over a white tee with classic blue jeans and a trendy olive green bucket hat.",
+  "a modern navy blue polo shirt made of fine Egyptian cotton, paired with beige linen trousers and a sophisticated natural straw panama hat.",
+  "a tailored light blue Egyptian linen button-down shirt tucked into charcoal grey dress slacks, paired with a matching linen baseball cap.",
+  "a refined sand-colored lightweight cotton cardigan over a crisp white t-shirt and slim olive chinos, topped with a stylish natural straw fedora.",
+  "a high-end black pique cotton polo shirt paired with tapered indigo jeans and white leather sneakers, worn with a matching black baseball cap.",
+  "a relaxed-fit light grey linen suit worn with a simple white crew-neck tee and a minimalist navy blue cap.",
+  "a modern tan-colored safari-style linen shirt with pocket details, paired with dark denim and a dark brown flat cap."
+];
+
+/**
+ * FEMALE_WARDROBE_STYLES:
+ * Simple, elegant feminine attire focused on clean lines and premium fabrics.
+ */
+export const FEMALE_WARDROBE_STYLES = [
+  "a simple and elegant long-sleeved silk-blend blouse in a soft lilac tone, paired with light-coloured tailored cotton trousers, topped with a matching modern baseball cap. MANDATORY: All hair MUST be completely tucked inside the cap with zero hair visible. Keep the neck completely bare.",
+  "a modern, minimalist solid-colored Egyptian linen knee-length dress in a soft coral tone, paired with a wide-brim natural straw sun hat. MANDATORY: The neck must be bare; all hair must be pulled back tightly and hidden underneath the hat.",
+  "a stylish white linen tunic with V-neckline and subtle embroidery, paired with slim-fit dark navy trousers and a chic navy blue bucket hat. MANDATORY: The hat must be pulled down with every strand of hair tucked inside. No fabric on the neck.",
+  "a casual yet chic terracotta-colored cotton jumpsuit with a cinched waist and short sleeves, worn with a trendy neutral-toned flat cap. MANDATORY: All hair must be hidden entirely inside the flat cap; the neck and collarbone must be visible.",
+  "a refined emerald green silk shirt with an open collar tucked into high-waisted beige linen pants, completed with a sophisticated patterned silk head scarf. MANDATORY: The scarf must be wrapped around the head only, like a headband or turban, leaving the ears and neck completely exposed.",
+  "a sleek navy blue short-sleeved premium cotton boiler-suit with a wide belt. MANDATORY: All hair must be tucked into a matching navy blue baseball cap; the neck must be clear.",
+  "a fluid burgundy silk blouse with a modern open collar, tucked into high-waisted cream trousers. MANDATORY: Topped with a stylish burgundy velvet flat cap with every strand of hair tucked inside. Bare neck.",
+  "a modern white linen shirt-dress with rolled-up sleeves and a clean V-neck. MANDATORY: Paired with a large natural straw sun hat worn low, hair tucked inside, neck completely exposed.",
+  "a modern pastel blue textured cotton polo-style tunic paired with white slim-fit pants. MANDATORY: All hair must be bunched up and hidden inside a matching pastel blue bucket hat; bare neck.",
+  "a simple knee-length charcoal grey ribbed cotton-knit dress with elbow-length sleeves. MANDATORY: Completed with a sophisticated silk turban-style head wrap that covers the scalp only, leaving the neck and jawline bare."
+];
 
 export const ERAS: EraData[] = [
   {
@@ -42,7 +78,7 @@ export const ERAS: EraData[] = [
     previewImage: "./Old-Egypt-Preview.png",
     scenery: [
       {
-        // 1. PHILAE TEMPLE QUAY
+        name: "Philae Temple Quay",
         prompt: "A wide-angle full-body environmental portrait on the stone quay of the Philae Temple. The individuals stand centrally, allowing a view of the surroundings. To their side rests a magnificent gilded Royal Bark (ritual boat) on a sledge. The background features towering temple Pylons covered in distinct Egyptian reliefs and the wide blue Nile. Bright, expansive, and regal.",
 maleClothingIds: [
   "Pharaoh's River Ceremony Regalia: A full white linen tunic with long sleeves. A massive gold Wesekh collar. Holds the Heqa crook. Mandatory Headwear: The blue-and-gold striped Nemes headdress fully covering all hair.",
@@ -56,7 +92,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 2. GREAT SPHINX & OBELISKS
+        name: "Great Sphinx & Obelisks",
         prompt: "A wide-angle full-body environmental portrait at the base of the Great Sphinx of Giza. Two massive red granite obelisks flank the individuals. In the background, the Great Pyramid of Khufu rises majestically against a clear blue Egyptian sky. Cinematic morning desert lighting with soft, long shadows.",
 maleClothingIds: [
   "Pharaoh's Victory Regalia: A full white linen tunic. A massive gold Wesekh collar. Holds a gold Khopesh. Mandatory Headwear: The tall gold and blue Pschent double crown fully covering all hair.",
@@ -70,7 +106,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 3. KARNAK HYPOSTYLE HALL
+        name: "Karnak Hypostyle Hall",
         prompt: "A wide-angle full-body environmental portrait deep within the Great Hypostyle Hall of Karnak. The individuals are dwarfed by massive papyrus-capital columns covered in vibrant, deeply carved hieroglyphics. Golden afternoon sunlight filters through the high clerestory windows, creating atmospheric dust motes and a sense of sacred awe.",
 maleClothingIds: [
   "Pharaoh's Temple Regalia: A full white linen tunic. A massive gold Wesekh collar. Mandatory Headwear: The tall white Hedjet crown fully covering all hair.",
@@ -84,7 +120,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 4. ROYAL PALACE TERRACE
+        name: "Royal Palace Terrace",
         prompt: "A wide-angle full-body environmental portrait on a magnificent white limestone terrace overlooking the lush Nile Delta. Intricate lotus-shaped columns support a brightly painted sky-blue ceiling. In the hazy distance, the white-walled city of Memphis and the Step Pyramid of Djoser are visible under a scorching sun.",
 maleClothingIds: [
   "Pharaoh's Court Regalia: A sheer fine white linen long tunic. Mandatory Headwear: The Pschent double crown fully covering all hair.",
@@ -99,7 +135,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 5. LUXOR TEMPLE COURTYARD
+        name: "Luxor Temple Courtyard",
          prompt: "A wide-angle full-body environmental portrait in the sun-drenched courtyard of Amenhotep III at Luxor Temple. A rhythmic double row of papyrus-bud columns creates a monumental background. Colossal standing statues of the Pharaoh in white crowns stand guard between columns. Bright, open, and regal.",
 maleClothingIds: [
   "Pharaoh's Processional Regalia: A full white linen tunic. Mandatory Headwear: The tall blue leather Khepresh war crown fully covering all hair.",
@@ -115,7 +151,7 @@ femaleClothingIds: [
 
       },
       {
-        // 6. VALLEY OF THE KINGS TOMB
+        name: "Valley of the Kings Tomb",
         prompt: "A wide-angle full-body environmental portrait inside a vibrantly painted royal burial chamber. The walls are covered from floor to ceiling with colorful Book of the Dead scenes and starry astronomical ceilings. A massive stone sarcophagus is partially visible in the shadows. Soft, warm flickering torchlight illuminates the intimate space.",
 maleClothingIds: [
   "Pharaoh's Funerary Regalia: A full white linen tunic. A massive gold Wesekh collar. Mandatory Headwear: The Atef funerary crown fully covering all hair.",
@@ -129,7 +165,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 7. TEMPLE OF HATSHEPSUT TERRACE
+        name: "Hatshepsut Mortuary Temple",
          prompt: "A wide-angle full-body environmental portrait on the upper terrace of the Mortuary Temple of Hatshepsut. The individuals stand before a long colonnade of Osiride pillars. Behind them, the sheer vertical limestone cliffs of Deir el-Bahari rise into a deep blue sky. Expansive, airy, and monumental.",
 maleClothingIds: [
   "Hatshepsut Pharaoh Regalia: A full white linen tunic fully covering the chest and torso. A massive gold Wesekh collar inlaid with turquoise and lapis lazuli sitting on top of the tunic. A stiff white linen Shendyt kilt with a triangular apron and gold central belt panel. Heavy gold armbands and wrist cuffs. Holds the gold Heqa crook and Nekhekh flail. Mandatory Headwear: The red Deshret crown of Lower Egypt fully covering all hair with NO hair visible whatsoever — a flat red cap with a high back and a distinctive tall spiral coil at the front — with a gold Uraeus cobra rearing at the brow.",
@@ -144,7 +180,7 @@ femaleClothingIds: [
 
       },
       {
-        // 8. ABU SIMBEL
+        name: "Abu Simbel Temples",
          prompt: "A wide-angle full-body environmental portrait directly in front of the Great Temple of Ramesses II at Abu Simbel. The individuals stand between the feet of the four colossal seated statues of the Pharaoh carved into the mountain. The entrance to the inner sanctuary is visible behind them. Powerful, ancient, and breathtaking.",
 maleClothingIds: [
   "Ramesses II Battle Regalia: A full white linen tunic fully covering the chest and torso. A massive gold Wesekh collar inlaid with lapis lazuli and carnelian sitting on top of the tunic. A stiff white linen Shendyt kilt with multiple fabric layers, intricate pleating, and a triangular apron piece extending from the front of the gold belt panel. Heavy gold armbands and wrist cuffs. Holds a gold Khopesh sickle-sword. Mandatory Headwear: The tall blue leather Khepresh war crown fully covering all hair with NO hair visible whatsoever, studded with small circular gold lozenges across its entire surface and a gold Uraeus cobra rearing at the brow.",
@@ -174,7 +210,7 @@ femaleClothingIds: [
     previewImage: "./Coptic-Preview.png",
     scenery: [
       {
-        // 1. DEIR MAR GIRGIS (Church of St. George)
+        name: "Church of St. George",
         prompt: "A wide-angle full-body environmental portrait in front of the Church of St. George (Deir Mar Girgis). Vibrant volumetric light highlights their authentic Coptic features. The background features the iconic circular rotunda with alternating layers of red Roman brick and limestone, ornate Coptic crosses, and Byzantine-style icons visible through arched windows. High-resolution vibrant colors.",
 maleClothingIds: [
   "Coptic Worshipper's Tunic: A long unbleached linen tunic with broad dark purple wool clavi stripes running from shoulders to hem. Tapestry-woven orbiculi roundels with interlace motifs on the lower tunic. A thin woven linen belt at the waist. Mandatory Headwear: A plain white linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, held in place by a gold and black geometric zigzag crown headband.",
@@ -195,7 +231,7 @@ femaleClothingIds: [
 
       },
       {
-        // 2. THE HANGING CHURCH (Al-Muallaqa)
+        name: "The Hanging Church",
         prompt: "A wide-angle full-body environmental portrait at the Hanging Church (Al-Muallaqa). Cinematic volumetric lighting casts a warm glow on their authentic Coptic features. The background shows the ornate wooden Loggia, intricate Khajesta (lattice) screens, and ancient biblical murals. Flickering lamps create a rich atmospheric environment.",
 maleClothingIds: [
   "Coptic Liturgical Tunic: A long fine linen tunic in natural flax color with broad purple wool clavi stripes and tapestry-woven tabulae on the shoulders. A thin braided linen belt at the waist. Mandatory Headwear: A white linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, secured by a gold and black geometric zigzag crown headband.",
@@ -211,7 +247,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 3. DEIR SAM3AN KHARAZ (St. Simon the Tanner)
+        name: "Cave Church of St. Simon",
         prompt: "A wide-angle full-body environmental portrait at the Cave Church of St. Simon. The person is front-facing with authentic features, looking directly at the camera. The background features the massive natural cave walls covered in colossal, detailed modern rock carvings of Coptic saints and biblical scenes, with simple wooden pews and religious inscriptions in the background.",
 maleClothingIds: [
   "Coptic Pilgrim's Tunic: A long coarse undyed rough linen tunic with narrow dark brown wool clavi stripes and simple orbiculi roundels near the hem. A knotted rope cord at the waist. Mandatory Headwear: A rough undyed linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, held by a gold and black geometric zigzag crown headband.",
@@ -227,7 +263,7 @@ femaleClothingIds: [
 
       },
       {
-        // 4. THE COPTIC MUSEUM
+        name: "The Coptic Museum",
         prompt: "A wide-angle full-body environmental portrait in the historic courtyard of the Coptic Museum. Volumetric sunlight highlights the person's authentic native features. The background features magnificent Mashrabiya wooden screens, carved stone fountains, and ancient Coptic crosses set into the walls in vibrant detail.",
 maleClothingIds: [
   "Coptic Nobleman's Tunic: A long fine linen tunic in natural flax with elaborate polychrome tapestry-woven clavi stripes featuring vine scrolls and Christian symbols. Wide square tabulae on each shoulder with figural medallions. A wide decorated leather belt at the waist. Mandatory Headwear: A light ivory linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, secured by an ornate gold and black geometric zigzag crown headband.",
@@ -242,7 +278,7 @@ femaleClothingIds: [
 
       },
       {
-        // 5. ANCIENT MONASTERY COMPLEX (Like St. Paul/Anthony)
+        name: "Ancient Monastery Complex",
         prompt: "A wide-angle full-body environmental portrait with a remote Desert Monastery in the background. Majestic volumetric lighting illuminates the authentic Coptic features. The background shows fortified mud-brick walls, ancient towers, and white-domed cells nestled against the rugged desert mountains under a golden sky.",
 maleClothingIds: [
   "Coptic Desert Monk's Habit: A long coarse dark brown wool tunic reaching the ankles with a single narrow black clavi stripe on each shoulder and a small woven cross near the collar. A knotted rope cord at the waist. Mandatory Headwear: A dark brown linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, held by a gold and black geometric zigzag crown headband.",
@@ -256,7 +292,7 @@ femaleClothingIds: [
 ],
       },
       {
-        // 6. SAINT CATHERINE’S MONASTERY
+        name: "Saint Catherine’s Monastery",
         prompt: "A wide-angle full-body environmental portrait at Saint Catherine’s Monastery. The person has authentic features, looking directly at the camera. The background shows the massive 6th-century fortress walls, the burning bush courtyard, and the towering granite peaks of Mount Sinai under a vibrant sky. Rich environmental focus.",
 maleClothingIds: [
   "Sinai Monastery Robe: A long heavy undyed wool tunic with broad dark clavi stripes on each shoulder and tapestry-woven orbiculi roundels near the hem. A thick leather belt at the waist. Mandatory Headwear: A dark grey linen veil covering the top of the head only, with the fabric falling straight down the back like a cape, completely clear of the face, ears, and neck, secured by a gold and black geometric zigzag crown headband.",
@@ -286,6 +322,7 @@ femaleClothingIds: [
     previewImage: "./Islamic-Preview.png",
     scenery: [
       {
+        name: "Mosque of Amr ibn al-As",
         prompt: "A wide-angle full-body environmental portrait in the open sahn of the Mosque of Amr ibn al-As. The person has authentic Medieval Arab features, looking directly at the camera. The background features a forest of ancient marble columns, pointed arches with stucco friezes, and a glimpse of the wooden minbar. Sunlight filters through the geometric rooftop. Rich, era-appropriate architecture.",
        maleClothingIds: [
   "Abbasid Scholar: A long ankle-length fine white Egyptian linen qamis (shirt-tunic) with wide sleeves, worn under a long ruby silk outer robe (Jubba) with gold Tiraz band embroidered with Kufic calligraphy along the right sleeve. A wide leather belt cinched at the waist. Leather pointed shoes. Mandatory Headwear: A tall cylindrical white taqiyya cap fully covering all hair with NO hair visible whatsoever, wrapped with a large white linen Imama turban wound neatly around the base of the cap, completely hiding all hair.",
@@ -303,6 +340,7 @@ femaleClothingIds: [
 
       },
       {
+        name: "Cairo Citadel Battlements",
         prompt: "A wide-angle full-body environmental portrait on the limestone battlements of the Cairo Citadel. Cinematic volumetric lighting highlights the authentic features. The background shows the formidable Saladin walls, the silver domes and slender minarets of the mosque, and a wide view of the vibrant medieval city. Professional cinematic pose.",
      maleClothingIds: [
   "Mamluk Commander: A long ankle-length fine white linen qamis with wide sleeves, worn under a heavy deep crimson silk brocade Qaba coat with gold geometric pattern weave and wide sleeves. A wide decorated metallic belt at the waist. Leather boots. Mandatory Headwear: A tall red cylindrical Kalawta cap fully covering all hair with NO hair visible whatsoever, wrapped with a thick white linen turban wound in large, elaborate folds around the base of the cap, completely hiding all hair.",
@@ -316,6 +354,7 @@ femaleClothingIds: [
 ],
       },
       {
+        name: "Sultan Hassan Mosque",
         prompt: "A wide-angle full-body environmental portrait in the massive courtyard of the Sultan Hassan Mosque-Madrassa. The person has authentic features, looking directly at the camera. The background features a towering stone iwan, colorful marble inlays, and ornate glass lamps (mishkats) hanging from long chains. Highly detailed Mamluk historical environment.",
      maleClothingIds: [
   "Mamluk Sultan's Vizier: A long ankle-length fine white Egyptian linen qamis, worn under a magnificent heavy emerald green silk brocade Qaba coat with wide sleeves and an elaborate gold Tiraz band of Kufic calligraphy embroidered along the right sleeve cuff. A wide gold-threaded silk sash at the waist. Fine leather pointed shoes. Mandatory Headwear: A tall red cylindrical Kalawta cap fully covering all hair with NO hair visible whatsoever, wrapped with a very large white silk turban wound in grand ceremonial Mamluk folds around the base of the cap, completely hiding all hair.",
@@ -330,6 +369,7 @@ femaleClothingIds: [
 
       },
       {
+        name: "Ibn Tulun Mosque",
         prompt: "A close-up chest-up portrait at the Ibn Tulun Mosque. The individuals feature authentic appearances, looking directly at the camera. The background features the unique pointed arches with delicate stucco calligraphic carvings and the iconic spiral minaret standing tall against the sky. Deep, rich environmental detail.",
      maleClothingIds: [
   "Fatimid Nobleman: A long ankle-length fine white Egyptian Dabiqi linen qamis with wide sleeves and a vertical round collar, worn under a deep saffron-yellow silk outer robe (Rida) with elaborate woven geometric patterns and a gold Tiraz band of Kufic calligraphy along the right sleeve. A wide fabric sash at the waist. Leather pointed shoes. Mandatory Headwear: A tall cylindrical taqiyya cap fully covering all hair with NO hair visible whatsoever, wrapped with a large white linen Imama turban wound in neat round folds completely hiding all hair.",
@@ -360,45 +400,29 @@ femaleClothingIds: [
     previewImage: "./Modern-Preview.png",
     scenery: [
       {
-        prompt: "a traditional Felucca boat sailing on the Nile River at golden hour, with the Cairo skyline and Cairo Tower visible in the distance. The water ripples gently, and the white sail catches the warm light.",
-         maleClothingIds: [
-    "80s Nile Style: A fitted long-sleeve deep navy blue satin shirt with bold structured shoulder pads, wide pointed collar, and subtle gold pinstripe pattern. Mandatory Headwear: A classic French beret in deep navy blue fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-    "90s Cairo Casual: A fitted long-sleeve white Egyptian cotton shirt with wide pointed collar and subtle embroidered trim along the cuffs. Mandatory Headwear: A wide-brim natural straw panama hat fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-    "Vintage Nile Traveler: A fitted long-sleeve olive green linen shirt with large front pockets, bold structured shoulders, and rolled cuffs. Mandatory Headwear: A classic wide-brim felt fedora in olive green fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-  ],
-  femaleClothingIds: [
-    "80s Nile Elegance: A fitted long-sleeve deep teal rayon blouse with dramatic shoulder pads, a wide cinched leather belt at the waist, and a subtle floral print pattern. Gold layered chain necklace and large gold hoop earrings. Mandatory Headwear: A wide-brim floppy straw sun hat fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — with a teal ribbon tied around the crown.",
-    "90s Cairo Chic: A fitted long-sleeve dusty rose satin blouse with subtle puffed shoulders and pearl button detailing down the front. A delicate gold chain necklace and small gold drop earrings. Mandatory Headwear: A classic French beret in dusty rose fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — tilted slightly to one side.",
-    "Vintage Egyptian Summer: A fitted long-sleeve ivory white cotton blouse with bold embroidered floral patterns along the collar and cuffs in red and navy thread. Gold stud earrings and a thin gold bracelet. Mandatory Headwear: A wide-brim natural straw sun hat fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-  ]
-      },
-
-      {
-         prompt: "a colorful hot air balloon basket high above Luxor at sunrise, with a breathtaking view of the Valley of the Kings and lush green fields below.",
-  maleClothingIds: [
-    "80s Balloon Explorer: A fitted long-sleeve deep burgundy velvet shirt with bold structured shoulder pads, wide pointed collar, and gold button detailing down the front. Mandatory Headwear: A classic French beret in deep burgundy fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — tilted slightly to one side.",
-    "90s Luxor Adventurer: A fitted long-sleeve camel-colored fine wool turtleneck with subtle ribbed texture. a simple leather wristband. Mandatory Headwear: A classic French beret in warm camel fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — worn straight across the top of the head.",
-    "Vintage Explorer Style: A fitted long-sleeve forest green corduroy overshirt with large front pockets, bold structured shoulders Mandatory Headwear: A wide-brim felt fedora in dark forest green fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-  ],
-  femaleClothingIds: [
-    "80s Balloon Adventure: A fitted long-sleeve deep burgundy velvet blouse with bold structured shoulder pads and a wide gold metallic belt cinched at the waist. Large gold hoop earrings and a layered gold chain necklace. Mandatory Headwear: A classic French beret in deep burgundy fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — tilted slightly to one side.",
-    "90s Luxor Traveler: A fitted long-sleeve camel-colored wool turtleneck sweater with a subtle ribbed texture. A thin gold chain necklace and small gold stud earrings. Mandatory Headwear: A classic French beret in warm camel fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — worn straight across the top of the head.",
-    "Vintage Egyptian Explorer: A fitted long-sleeve forest green corduroy shirt-jacket with large front pockets and bold structured shoulders. Gold button earrings and a thin leather wristband. Mandatory Headwear: A wide-brim felt fedora hat in dark forest green fully covering all hair with absolutely NO hair visible whatsoever — not a single strand.",
-  ]
+        name: "Nile River Felucca",
+        prompt: "A traditional wooden Felucca boat sailing silently on the Nile River at the peak of golden hour. The water is like liquid gold, rippling gently against the hull. In the background, the modern Cairo skyline, the iconic Cairo Tower, and the Grand Hyatt hotel are bathed in a warm orange glow. The white canvas sail of the boat catches the setting sun, creating a majestic and peaceful atmosphere. The boat environment is private and clear of any background people.",
+        maleClothingIds: MALE_WARDROBE_STYLES,
+        femaleClothingIds: FEMALE_WARDROBE_STYLES
       },
       {
-      prompt: "at Khan El Khalili bazaar in the heart of Islamic Cairo. Authentic modern Egyptian features, looking directly at the camera. The background features the iconic medieval Mamluk stone arched gates, colorful brass lanterns hanging overhead, vibrant stalls overflowing with spices and handcrafted jewelry, warm golden light filtering through the narrow alleys, and the ornate facade of El Fishawi cafe visible in the background.",
- maleClothingIds: [
-    "80s Khan El Khalili Glam: A fitted long-sleeve jeans shirt, bold structured shoulder pads, and subtle gold embroidery along the cuffs. Mandatory Headwear: A classic French beret in rich saffron yellow fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — tilted slightly to one side.",
-    "90s Bazaar Style: A fitted long-sleeve deep terracotta cotton shirt with wide pointed collar, subtle geometric embroidery along the neckline and cuffs in gold thread.  Mandatory Headwear: A wide-brim natural straw hat fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — with a terracotta ribbon tied around the crown.",
-    "Vintage Cairo Bazaar Look: A fitted long-sleeve deep navy blue cotton shirt with bold white pinstripes, puffed shoulders, and a wide white collar. Mandatory Headwear: A classic French beret in deep navy blue fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — worn straight across the top of the head.",
-  ],
-  femaleClothingIds: [
-    "80s Khan El Khalili Glam: A fitted long-sleeve deep saffron yellow silk blouse with dramatic ruffled collar, bold structured shoulder pads, and intricate gold embroidery along the cuffs. Large dangling gold and carnelian earrings and a layered gold chain necklace. Mandatory Headwear: A classic French beret in rich saffron yellow fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — tilted slightly to one side.",
-    "90s Bazaar Elegance: A fitted long-sleeve deep terracotta cotton blouse with a wide pointed collar, subtle geometric embroidery along the neckline and cuffs in gold thread, and a cinched wide leather belt at the waist. Gold chandelier earrings and a chunky gold bracelet. Mandatory Headwear: A wide-brim natural straw hat fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — with a terracotta ribbon tied around the crown.",
-    "Vintage Cairo Style: A fitted long-sleeve deep navy blue cotton blouse with bold white polka dots, puffed shoulders, and a wide white collar. Small gold stud earrings and a delicate gold chain necklace. Mandatory Headwear: A classic French beret in deep navy blue fully covering all hair with absolutely NO hair visible whatsoever — not a single strand — worn straight across the top of the head.",
-  ]
-}
+        name: "Luxor Hot Air Balloon",
+        prompt: "Inside a colorful hot air balloon basket floating high above the West Bank of Luxor at a misty sunrise. The golden light hits the rugged limestone mountains of the Valley of the Kings. Below, a patchwork of vibrant green sugarcane fields is dotted with ancient ruins and small villages. A soft morning haze hangs over the landscape, and other balloons are visible as tiny dots in the distance. The interior of the basket is private and clear of any extra people.",
+        maleClothingIds: MALE_WARDROBE_STYLES,
+        femaleClothingIds: FEMALE_WARDROBE_STYLES
+      },
+      {
+        name: "Khan El Khalili Bazaar",
+        prompt: "Deep within the heart of a quiet Khan El Khalili bazaar. The background features a breathtaking array of hundreds of glowing brass lanterns and ornate lamps reflecting off ancient stone walls. Narrow cobblestone alleys are lined with colorful spice mounds, intricate silver jewelry, and antique artifacts. The soft steam from a nearby tea stall and the warm, inviting glow of El Fishawi cafe create an incredibly rich atmosphere. The entire market setting is empty of any other people or pedestrians.",
+        maleClothingIds: MALE_WARDROBE_STYLES,
+        femaleClothingIds: FEMALE_WARDROBE_STYLES
+      },
+      {
+        name: "Grand Egyptian Museum",
+        prompt: "Inside the magnificent Grand Egyptian Museum (GEM) at the grand atrium. The background features the colossal granite statue of Ramesses II standing in the sun-drenched space, with the modern architectural triangulated glass facade and the Great Pyramids visible in the distance through the window. The space is vast, clean, and futuristic. The museum environment is entirely empty of other tourists or background figures.",
+        maleClothingIds: MALE_WARDROBE_STYLES,
+        femaleClothingIds: FEMALE_WARDROBE_STYLES
+      }
     ],
     stamps: [
       "./Stamps/Modern-Egypt/1.png"

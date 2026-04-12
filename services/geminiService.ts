@@ -109,26 +109,48 @@ export const generateHistoricalImage = async (
   }
 
   // Pick the next scene index
-  sceneIdx = deck.pop() || 0;
-  localStorage.setItem(deckKey, JSON.stringify(deck));
+  if (faceData.selectedSceneryIdx !== undefined && era.scenery[faceData.selectedSceneryIdx]) {
+    sceneIdx = faceData.selectedSceneryIdx;
+    console.log(`[Prompt Gen] Using MANUALLY SELECTED scene #${sceneIdx} (${era.scenery[sceneIdx].name}) for era ${era.id}`);
+  } else {
+    sceneIdx = deck.pop() || 0;
+    localStorage.setItem(deckKey, JSON.stringify(deck));
+    console.log(`[Prompt Gen] Selected scene #${sceneIdx} from deck for era ${era.id}. Remaining in deck: ${deck.length}`);
+  }
 
   const scene = era.scenery[sceneIdx];
-  console.log(`[Prompt Gen] Selected scene #${sceneIdx} from deck for era ${era.id}. Remaining in deck: ${deck.length}`);
   const clothingParts: string[] = [];
 
-  const physicalTraits = ["athletic build", "slight/slender build", "average build", "broad-shouldered", "muscular build"];
-  const skinTones = ["warm olive", "bronze", "medium tan", "golden brown"];
+  const physicalTraits = ["athletic build", "slight/slender build", "average build", "lean build"];
+  const skinTones = ["fair olive", "warm ivory", "light honey", "warm wheatish"];
+  
+  let eraSpecificInstructions = "";
+  let currentSkinTones = skinTones;
+
+  if (era.id === 'MODERN_EGYPT') {
+    // Lock to the exact skin tone of the woman in white the user liked
+    currentSkinTones = ["fair olive"];
+    
+    eraSpecificInstructions = `
+    MODERN EGYPT MANDATORY RULES:
+    1. SKIN TONE: All individuals must have the exact same "fair olive" or "light wheatish" skin tone. No dark or brown skin tones.
+    2. PHYSIQUE: All individuals must have an athletic, lean, or average build. ABSOLUTELY NO obese, overweight, or heavy-set bodies.
+    3. NO FACIAL HAIR: Every man MUST be glass-smooth clean-shaven. Absolutely no beards, mustaches, or stubble.
+    4. MODERN HAIR COVERAGE (NOT HIJAB): The headwear (caps, hats, scarves) must look modern and casual. MANDATORY: There must be NO fabric wrapping the neck, NO fabric under the chin, and NO hijab-like appearances. The hair must be 100% tucked inside the hats/caps themselves, leaving the neck and jawline completely clear.
+    5. NO SHADOWS ON FACES: Frontal fill-lighting is mandatory to prevent headwear from casting any shadows on faces.
+    `;
+  }
 
   if (faceData.maleCount > 0) {
     for (let i = 0; i < faceData.maleCount; i++) {
       const maleOutfit = scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)];
-      clothingParts.push(`Man ${faceData.maleCount > 1 ? (i + 1) : ''}: A unique individual with a ${physicalTraits[Math.floor(Math.random() * physicalTraits.length)]} and ${skinTones[Math.floor(Math.random() * skinTones.length)]} skin, wearing a full-body version of ${maleOutfit}. This person MUST be fully clothed with no bare chest.`);
+      clothingParts.push(`Man ${faceData.maleCount > 1 ? (i + 1) : ''}: A unique individual with a ${physicalTraits[Math.floor(Math.random() * physicalTraits.length)]} and ${currentSkinTones[Math.floor(Math.random() * currentSkinTones.length)]} skin, wearing a full-body version of ${maleOutfit}. This person MUST be fully clothed with no bare chest.`);
     }
   }
   if (faceData.femaleCount > 0) {
     for (let i = 0; i < faceData.femaleCount; i++) {
       const femaleOutfit = scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)];
-      clothingParts.push(`Woman ${faceData.femaleCount > 1 ? (i + 1) : ''}: A unique individual with ${skinTones[Math.floor(Math.random() * skinTones.length)]} skin, wearing a distinct and different variation of ${femaleOutfit}`);
+      clothingParts.push(`Woman ${faceData.femaleCount > 1 ? (i + 1) : ''}: A unique individual with ${currentSkinTones[Math.floor(Math.random() * currentSkinTones.length)]} skin, wearing a distinct and different variation of ${femaleOutfit}`);
     }
   }
   if (faceData.childCount > 0) {
@@ -140,19 +162,33 @@ export const generateHistoricalImage = async (
   const clothingDescription = clothingParts.sort(() => Math.random() - 0.5).join(". ");
 
   // 3. Construct Unified Prompt
+  const behaviorInstruction = faceData.totalPeople === 1 
+    ? "The individual is looking directly at the camera with a natural, friendly expression."
+    : "The individuals are looking directly at the camera with natural, friendly expressions.";
+
+  const countEnforcement = `MANDATORY: There must be EXACTLY ${faceData.totalPeople} ${faceData.totalPeople === 1 ? 'person' : 'people'} in this image. ABSOLUTELY NO EXTRA PEOPLE.`;
+
   let prompt = "";
   if (includeCharacter) {
     const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
     prompt = `
+    ${SHARED_PROMPT_INSTRUCTIONS}
+    
     A magnificent cinematic duo full-body environmental portrait set in ${scene.prompt}. 
     The photograph features two individuals in a shared moment, professionally posed in the scene:
     
     1. THE PERSON: A figure of ${era.name} Egypt wearing ${clothingDescription}. 
     2. THE COMPANION: ${companion.description}
     
+    BEHAVIOR: They are both looking directly at the camera.
+    
     COMPOSITION:
     They should be positioned gracefully side-by-side, integrated into the same physical space with cohesive lighting and shadows.
     Absolutely no modern technology, cameras, or mobile phones.
+    
+    ${countEnforcement}
+    
+    ${eraSpecificInstructions}
     
     ${IDENTITY_PRESERVATION_GUIDE}
     
@@ -163,11 +199,16 @@ export const generateHistoricalImage = async (
     prompt = `
     ${SHARED_PROMPT_INSTRUCTIONS}
     
-    SCENE: A scene featuring ${subjectDescription}.
-    LOCATION: ${scene.prompt} during the ${era.name} era.
+    SCENE: A scene featuring ${subjectDescription} set in ${era.name} era.
+    LOCATION: ${scene.prompt}.
     CLOTHING: ${clothingDescription}. 
+    BEHAVIOR: ${behaviorInstruction}
     
     STYLE: Professional cinematic photography, 9:16 portrait.
+    
+    ${countEnforcement}
+    
+    ${eraSpecificInstructions}
     
     ${IDENTITY_PRESERVATION_GUIDE}
     

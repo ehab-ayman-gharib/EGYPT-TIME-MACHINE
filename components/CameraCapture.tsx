@@ -12,13 +12,15 @@ interface CameraCaptureProps {
 export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, onBack, isProcessing = false }) => {
   const [maleCount, setMaleCount] = useState(1);
   const [femaleCount, setFemaleCount] = useState(0);
+  const [selectedSceneryIdx, setSelectedSceneryIdx] = useState(0);
 
   const handleGenerate = () => {
     const faceData: FaceDetectionResult = {
       maleCount,
       femaleCount,
       childCount: 0,
-      totalPeople: maleCount + femaleCount
+      totalPeople: maleCount + femaleCount,
+      selectedSceneryIdx
     };
     // Send empty string for image as it's no longer used for generation
     onCapture('', faceData);
@@ -90,6 +92,30 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
                 onClick={() => setFemaleCount(Math.min(4, femaleCount + 1))}
                 className="w-12 h-12 flex items-center justify-center bg-white/10 rounded-2xl text-white hover:bg-white/20 transition-all active:scale-90 border border-white/5"
               >+</button>
+            </div>
+          </div>
+
+          {/* Scenery Selector */}
+          <div className="bg-white/5 backdrop-blur-md rounded-3xl p-8 border border-white/10 flex flex-col gap-4 group hover:bg-white/10 transition-colors">
+            <div className="flex flex-col">
+              <span className="text-gold-400 text-xs font-bold brand-font tracking-widest uppercase">LOCATION</span>
+              <span className="text-white text-2xl font-bold">Where to visit?</span>
+            </div>
+            <div className="relative">
+              <select 
+                value={selectedSceneryIdx}
+                onChange={(e) => setSelectedSceneryIdx(parseInt(e.target.value))}
+                className="w-full bg-white/10 border border-white/10 rounded-2xl p-4 text-white text-lg appearance-none focus:outline-none focus:ring-2 focus:ring-gold-500/50 transition-all cursor-pointer"
+              >
+                {era?.scenery.map((scene, idx) => (
+                  <option key={idx} value={idx} className="bg-[#1a1a1c] text-white">
+                    {scene.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+                <ChevronLeft className="rotate-[-90deg]" size={20} />
+              </div>
             </div>
           </div>
         </div>
