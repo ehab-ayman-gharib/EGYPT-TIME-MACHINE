@@ -1,10 +1,14 @@
 import { EraData, EraId } from './types';
 
-export const SHARED_PROMPT_INSTRUCTIONS = `A hyper-realistic, high-resolution portrait-oriented photo. Each person’s appearance must accurately match the source photo, fully preserving identity, natural skin tone, ethnic features, gender, age, facial structure, and expression. The final image should look like a modern professional photoshoot with an authentic historical theme. Everything must appear natural, cohesive, and true to the original individuals. No cartoon style, no distortion.`;
+export const SHARED_PROMPT_INSTRUCTIONS = `A hyper-realistic, high-resolution portrait-oriented photo. MANDATORY: Fully preserve all facial features and identity exactly as they appear in the source photo; the person's face must be generated "as is" with NO CHANGE at all. Maintain exact skin tone, ethnic features, age, and expression. The final image should look like a modern professional photoshoot with an authentic historical theme. Everything must appear natural and true to the original individuals. No cartoon style, no distortion.`;
 
-export const IDENTITY_PRESERVATION_GUIDE = `REQUIREMENTS:
-- KEEP the original faces and identity visible and recognizable. Do NOT alter features.
-- Change ONLY clothing, hair, and accessories to be historically accurate.
+export const IDENTITY_PRESERVATION_GUIDE = `MANDATORY IDENTITY REQUIREMENTS:
+- KEEP the original faces and identity 100% recognizable. Do NOT alter any facial features. The face must be generated "as is" from the source.
+- CLOTHING & HEADWEAR LOGIC:
+  1. For men: Apply historically accurate clothing and headwear.
+  2. For women: 
+     - If the woman in the source photo has headwear (like a hijab), you MUST keep the face with era-relevant headwear that covers the hair. 
+     - If the woman has NO headwear and shows hair, it is OK to show hair in the generated image (styled relevant to the era).
 - Photorealistic, high quality, 9:16 portrait.
 - Lighting must be cinematic, volumetric, and natural, casting realistic shadows on the clothing layers.`;
 
