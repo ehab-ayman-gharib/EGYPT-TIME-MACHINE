@@ -109,19 +109,51 @@ export const generateHistoricalImage = async (
 
   const scene = era.scenery[sceneIdx];
   console.log(`[Prompt Gen] Selected non-repeating scene #${sceneIdx} for era ${era.id} (last was ${lastIdx})`);
+  const getUniqueClothing = (count: number, clothingOptions: string[], singularLabel: string) => {
+    if (!clothingOptions || clothingOptions.length === 0) return `the ${singularLabel} wearing era-appropriate attire`;
+    if (count === 1) {
+      return `the ${singularLabel} wearing ${clothingOptions[Math.floor(Math.random() * clothingOptions.length)]}`;
+    }
+
+    // Copy and shuffle options for this run to assign distinct styles
+    let shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
+    let resultParts = [];
+
+    for (let i = 0; i < count; i++) {
+      // Reshuffle if we run out of unique options
+      if (i > 0 && i % clothingOptions.length === 0) {
+        shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
+      }
+      const option = shuffledOptions[i % clothingOptions.length];
+
+      // Define it as "Man 1 wearing...", "Woman 2 wearing..."
+      const labelText = `${singularLabel.charAt(0).toUpperCase() + singularLabel.slice(1)} ${i + 1}`;
+      resultParts.push(`${labelText} wearing ${option}`);
+    }
+    return resultParts.join("; ");
+  };
+
   const clothingParts: string[] = [];
 
   if (faceData.maleCount > 0) {
-    clothingParts.push(`the ${faceData.maleCount > 1 ? 'men' : 'man'} wearing ${scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)]}`);
+    clothingParts.push(getUniqueClothing(faceData.maleCount, scene.maleClothingIds, 'man'));
   }
   if (faceData.femaleCount > 0) {
-    clothingParts.push(`the ${faceData.femaleCount > 1 ? 'women' : 'woman'} wearing ${scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)]}`);
+    clothingParts.push(getUniqueClothing(faceData.femaleCount, scene.femaleClothingIds, 'woman'));
   }
   if (faceData.childCount > 0) {
-    clothingParts.push(`the ${faceData.childCount > 1 ? 'children' : 'child'} wearing historically accurate ${era.name} child attire`);
+    if (faceData.childCount === 1) {
+      clothingParts.push(`the child wearing historically accurate ${era.name} child attire`);
+    } else {
+      let childParts = [];
+      for (let i = 0; i < faceData.childCount; i++) {
+        childParts.push(`Child ${i + 1} wearing historically accurate ${era.name} child attire`);
+      }
+      clothingParts.push(childParts.join("; "));
+    }
   }
 
-  const clothingDescription = clothingParts.join(", ");
+  const clothingDescription = clothingParts.join("\n    ");
 
   // 3. Construct Unified Prompt
   let prompt = "";
@@ -183,7 +215,8 @@ export const generateHistoricalImage = async (
   try {
     // 4. Send to Gemini
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+      //  model: 'gemini-2.5-flash-image',
+      model: 'gemini-3.1-flash-image-preview',
       config: requestConfig,
       contents: [
         {
