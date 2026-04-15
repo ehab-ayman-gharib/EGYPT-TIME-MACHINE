@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AppScreen, EraData, FaceDetectionResult, EraId } from './types';
 import { SplashScreen } from './components/SplashScreen';
 import { CameraCapture } from './components/CameraCapture';
+import { CapturePreview } from './components/CapturePreview';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
 import { generateHistoricalImage } from './services/geminiService';
@@ -11,6 +12,7 @@ import { ERAS } from './constants';
 const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
@@ -26,7 +28,14 @@ const App: React.FC = () => {
     setCurrentScreen(AppScreen.CAMERA);
   };
 
-  const handleCapture = async (imageSrc: string, faceData: FaceDetectionResult) => {
+  const handleCapture = (imageSrc: string, faceData: FaceDetectionResult) => {
+    if (!selectedEra) return;
+    setCapturedImage(imageSrc);
+    setFaceDetectionResult(faceData);
+    setCurrentScreen(AppScreen.PREVIEW);
+  };
+
+  const processAI = async (imageSrc: string, faceData: FaceDetectionResult) => {
     if (!selectedEra) return;
 
     setFaceDetectionResult(faceData);
@@ -78,6 +87,7 @@ const App: React.FC = () => {
   };
 
   const handleRestart = () => {
+    setCapturedImage(null);
     setGeneratedImage(null);
     setGeneratedPrompt('');
     setSelectedEra(null);
@@ -99,6 +109,16 @@ const App: React.FC = () => {
         return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
       case AppScreen.CAMERA:
         return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
+      case AppScreen.PREVIEW:
+        return (
+          <CapturePreview
+            image={capturedImage || ''}
+            faceData={faceDetectionResult}
+            era={selectedEra}
+            onConfirm={() => processAI(capturedImage!, faceDetectionResult!)}
+            onRetake={() => setCurrentScreen(AppScreen.CAMERA)}
+          />
+        );
       case AppScreen.PROCESSING:
         return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} isProcessing={true} />;
       case AppScreen.RESULT:
