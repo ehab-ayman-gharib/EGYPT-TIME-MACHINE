@@ -215,8 +215,8 @@ export const generateHistoricalImage = async (
   try {
     // 4. Send to Gemini
     const response = await ai.models.generateContent({
-      //  model: 'gemini-2.5-flash-image',
-      model: 'gemini-3.1-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
+     // model: 'gemini-3.1-flash-image-preview',
       config: requestConfig,
       contents: [
         {
