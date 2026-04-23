@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { EraData, FaceDetectionResult } from '../types';
-import { SHARED_PROMPT_INSTRUCTIONS, IDENTITY_PRESERVATION_GUIDE, CAMERA_CONFIG } from '../constants';
+import { SHARED_PROMPT_INSTRUCTIONS, IDENTITY_PRESERVATION_GUIDE } from '../constants';
 
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
@@ -41,10 +41,12 @@ export interface GenerationResult {
 }
 
 export const generateHistoricalImage = async (
+  base64Image: string,
   era: EraData,
   faceData: FaceDetectionResult
 ): Promise<GenerationResult> => {
   const ai = getAiClient();
+  const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
   // 1. Calculate Group Description
   let subjectDescription = "";
@@ -53,15 +55,15 @@ export const generateHistoricalImage = async (
   const COMPANIONS = [
     {
       name: "QUEEN NEFERTITI",
-      description: "the legendary Queen Nefertiti in a tight waist-up portrait, recognizable by her iconic tall, flat-topped blue cap crown, a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen bodice. She has sharp regal facial features and traditional Egyptian kohl eye makeup."
+      description: "the legendary Queen Nefertiti, recognizable by her iconic tall, flat-topped blue cap crown (Nemes), a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen sheath gown. She should have her distinct regal facial features and traditional Egyptian kohl eye makeup."
     },
     {
       name: "PHARAOH THUTMOSE III",
-      description: "the great warrior Pharaoh Thutmose III in a chest-up portrait, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra and a broad gold chest collar. He has a powerful and majestic presence focusing on his face and torso."
+      description: "the great warrior Pharaoh Thutmose III, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra, a broad gold chest collar, and a stiff pleated royal kilt with a golden belt. He stands with a powerful and majestic presence."
     },
     {
       name: "THE GODDESS ISIS",
-      description: "the divine Goddess Isis in a cinematic waist-up portrait, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting bodice adorned with gold beads."
+      description: "the divine Goddess Isis, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting sheath dress adorned with gold beads and carries a golden Ankh."
     }
   ];
 
@@ -85,134 +87,103 @@ export const generateHistoricalImage = async (
     }
   }
 
-  // 2. Select Scene using a Shuffled Deck approach to prevent repetition
+  // 2. Select Scene and Clothing
   let sceneIdx = 0;
-  const deckKey = `scenery_deck_${era.id}`;
-  let deck: number[] = [];
-  
-  try {
-    const savedDeck = localStorage.getItem(deckKey);
-    deck = savedDeck ? JSON.parse(savedDeck) : [];
-  } catch (e) {
-    deck = [];
-  }
+  const lastScenesKey = 'extra_last_scenes';
+  const lastScenes = JSON.parse(localStorage.getItem(lastScenesKey) || '{}');
+  const lastIdx = lastScenes[era.id];
 
-  // If deck is empty, replenish and shuffle it
-  if (!deck || deck.length === 0) {
-    deck = Array.from({ length: era.scenery.length }, (_, i) => i);
-    // Fisher-Yates shuffle
-    for (let i = deck.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [deck[i], deck[j]] = [deck[j], deck[i]];
+  if (era.scenery.length > 1) {
+    // Try up to 10 times to get a different scene
+    for (let i = 0; i < 10; i++) {
+      sceneIdx = Math.floor(Math.random() * era.scenery.length);
+      if (sceneIdx !== lastIdx) break;
     }
-    console.log(`[Deck] Replenished deck for ${era.id}:`, deck);
+  } else {
+    sceneIdx = 0;
   }
 
-  // Pick the next scene index
-  if (faceData.selectedSceneryIdx !== undefined && era.scenery[faceData.selectedSceneryIdx]) {
-    sceneIdx = faceData.selectedSceneryIdx;
-    console.log(`[Prompt Gen] Using MANUALLY SELECTED scene #${sceneIdx} (${era.scenery[sceneIdx].name}) for era ${era.id}`);
-  } else {
-    sceneIdx = deck.pop() || 0;
-    localStorage.setItem(deckKey, JSON.stringify(deck));
-    console.log(`[Prompt Gen] Selected scene #${sceneIdx} from deck for era ${era.id}. Remaining in deck: ${deck.length}`);
-  }
+  // Save selected scene to prevent repetition in next session
+  lastScenes[era.id] = sceneIdx;
+  localStorage.setItem(lastScenesKey, JSON.stringify(lastScenes));
 
   const scene = era.scenery[sceneIdx];
+  console.log(`[Prompt Gen] Selected non-repeating scene #${sceneIdx} for era ${era.id} (last was ${lastIdx})`);
+  const getUniqueClothing = (count: number, clothingOptions: string[], singularLabel: string) => {
+    if (!clothingOptions || clothingOptions.length === 0) return `the ${singularLabel} wearing era-appropriate attire`;
+    if (count === 1) {
+      return `the ${singularLabel} wearing ${clothingOptions[Math.floor(Math.random() * clothingOptions.length)]}`;
+    }
+
+    // Copy and shuffle options for this run to assign distinct styles
+    let shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
+    let resultParts = [];
+
+    for (let i = 0; i < count; i++) {
+      // Reshuffle if we run out of unique options
+      if (i > 0 && i % clothingOptions.length === 0) {
+        shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
+      }
+      const option = shuffledOptions[i % clothingOptions.length];
+
+      // Define it as "Man 1 wearing...", "Woman 2 wearing..."
+      const labelText = `${singularLabel.charAt(0).toUpperCase() + singularLabel.slice(1)} ${i + 1}`;
+      resultParts.push(`${labelText} wearing ${option}`);
+    }
+    return resultParts.join("; ");
+  };
+
   const clothingParts: string[] = [];
 
-  const physicalTraits = ["athletic build", "slight/slender build", "average build", "lean build"];
-  const skinTones = ["fair olive", "warm ivory", "light honey", "warm wheatish"];
-  
-  let eraSpecificInstructions = "";
-  let currentSkinTones = skinTones;
-
-  if (era.id === 'MODERN_EGYPT') {
-    // Lock to the exact skin tone of the woman in white the user liked
-    currentSkinTones = ["fair olive"];
-    
-    eraSpecificInstructions = `
-    MODERN EGYPT MANDATORY RULES:
-    1. SKIN TONE: All individuals must have the exact same "fair olive" or "light wheatish" skin tone. No dark or brown skin tones.
-    2. PHYSIQUE: All individuals must have an athletic, lean, or average build. ABSOLUTELY NO obese, overweight, or heavy-set bodies.
-    3. NO FACIAL HAIR: Every man MUST be glass-smooth clean-shaven. Absolutely no beards, mustaches, or stubble.
-    4. MODERN HAIR COVERAGE (NOT HIJAB): The headwear (caps, hats, scarves) must look modern and casual. MANDATORY: There must be NO fabric wrapping the neck, NO fabric under the chin, and NO hijab-like appearances. The hair must be 100% tucked inside the hats/caps themselves, leaving the neck and jawline completely clear.
-    5. NO SHADOWS ON FACES: Frontal fill-lighting is mandatory to prevent headwear from casting any shadows on faces.
-    `;
-  }
-
   if (faceData.maleCount > 0) {
-    for (let i = 0; i < faceData.maleCount; i++) {
-      const maleOutfit = scene.maleClothingIds[Math.floor(Math.random() * scene.maleClothingIds.length)];
-      clothingParts.push(`Man ${faceData.maleCount > 1 ? (i + 1) : ''}: A unique individual with a ${physicalTraits[Math.floor(Math.random() * physicalTraits.length)]} and ${currentSkinTones[Math.floor(Math.random() * currentSkinTones.length)]} skin, wearing a full-body version of ${maleOutfit}. This person MUST be fully clothed with no bare chest.`);
-    }
+    clothingParts.push(getUniqueClothing(faceData.maleCount, scene.maleClothingIds, 'man'));
   }
   if (faceData.femaleCount > 0) {
-    for (let i = 0; i < faceData.femaleCount; i++) {
-      const femaleOutfit = scene.femaleClothingIds[Math.floor(Math.random() * scene.femaleClothingIds.length)];
-      clothingParts.push(`Woman ${faceData.femaleCount > 1 ? (i + 1) : ''}: A unique individual with ${currentSkinTones[Math.floor(Math.random() * currentSkinTones.length)]} skin, wearing a distinct and different variation of ${femaleOutfit}`);
-    }
+    clothingParts.push(getUniqueClothing(faceData.femaleCount, scene.femaleClothingIds, 'woman'));
   }
   if (faceData.childCount > 0) {
-    for (let i = 0; i < faceData.childCount; i++) {
-      clothingParts.push(`Child ${faceData.childCount > 1 ? (i + 1) : ''} wearing a unique historically accurate ${era.name} child attire, different from others in the photo.`);
+    if (faceData.childCount === 1) {
+      clothingParts.push(`the child wearing historically accurate ${era.name} child attire`);
+    } else {
+      let childParts = [];
+      for (let i = 0; i < faceData.childCount; i++) {
+        childParts.push(`Child ${i + 1} wearing historically accurate ${era.name} child attire`);
+      }
+      clothingParts.push(childParts.join("; "));
     }
   }
 
-  const clothingDescription = clothingParts.sort(() => Math.random() - 0.5).join(". ");
+  const clothingDescription = clothingParts.join("\n    ");
 
   // 3. Construct Unified Prompt
-  const behaviorInstruction = faceData.totalPeople === 1 
-    ? "The individual is looking directly at the camera with a natural, friendly expression."
-    : "The individuals are looking directly at the camera with natural, friendly expressions.";
-
-  const countEnforcement = `MANDATORY: There must be EXACTLY ${faceData.totalPeople} ${faceData.totalPeople === 1 ? 'person' : 'people'} in this image. ABSOLUTELY NO EXTRA PEOPLE.`;
-
   let prompt = "";
   if (includeCharacter) {
     const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
     prompt = `
-    ${SHARED_PROMPT_INSTRUCTIONS}
+    A magnificent cinematic duo portrait set in ${scene.prompt}. 
+    The photograph features two individuals standing side-by-side in a shared moment:
     
-    A magnificent cinematic duo full-body environmental portrait set in ${scene.prompt}. 
-    The photograph features two individuals in a shared moment, professionally posed in the scene:
-    
-    1. THE PERSON: A figure of ${era.name} Egypt wearing ${clothingDescription}. 
+    1. THE USER: A person from the provided photo, transformed into a historical figure of ${era.name} Egypt wearing ${clothingDescription}. Their facial features and identity MUST be perfectly preserved.
     2. THE COMPANION: ${companion.description}
     
-    BEHAVIOR: They are both looking directly at the camera.
-    
     COMPOSITION:
-    They should be positioned gracefully side-by-side, integrated into the same physical space with cohesive lighting and shadows.
+    They should be standing gracefully side-by-side or shoulder-to-shoulder, integrated into the same physical space with cohesive lighting and shadows. This should look like a professional, high-quality historical photograph.
     Absolutely no modern technology, cameras, or mobile phones.
     
-    ${countEnforcement}
-    
-    ${eraSpecificInstructions}
-    
     ${IDENTITY_PRESERVATION_GUIDE}
-    
-    ${CAMERA_CONFIG}
     `;
   } else {
     // Normal Group Photo or No Character
     prompt = `
     ${SHARED_PROMPT_INSTRUCTIONS}
     
-    SCENE: A scene featuring ${subjectDescription} set in ${era.name} era.
-    LOCATION: ${scene.prompt}.
+    INPUT: A photo of ${subjectDescription}.
+    TASK: Place them into ${scene.prompt} during the ${era.name} era.
     CLOTHING: ${clothingDescription}. 
-    BEHAVIOR: ${behaviorInstruction}
     
     STYLE: Professional cinematic photography, 9:16 portrait.
     
-    ${countEnforcement}
-    
-    ${eraSpecificInstructions}
-    
     ${IDENTITY_PRESERVATION_GUIDE}
-    
-    ${CAMERA_CONFIG}
     `;
   }
 
@@ -230,7 +201,8 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    temperature: 1,
+    temperature: 0.2,
+    // Add the seed here. It must be an integer.
     // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"
@@ -243,11 +215,18 @@ export const generateHistoricalImage = async (
   try {
     // 4. Send to Gemini
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+        model: 'gemini-2.5-flash-image',
+     // model: 'gemini-3.1-flash-image-preview',
       config: requestConfig,
       contents: [
         {
           parts: [
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: cleanBase64
+              }
+            },
             { text: prompt }
           ]
         }
