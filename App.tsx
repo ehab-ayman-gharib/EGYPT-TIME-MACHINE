@@ -14,6 +14,7 @@ const App: React.FC = () => {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
 
@@ -26,9 +27,9 @@ const App: React.FC = () => {
     setCurrentScreen(AppScreen.CAMERA);
   };
 
-  const handleCapture = async (_: string, faceData: FaceDetectionResult) => {
+  const handleCapture = async (image: string, faceData: FaceDetectionResult) => {
     if (!selectedEra) return;
-
+    setCapturedImage(image);
     setFaceDetectionResult(faceData);
     setCurrentScreen(AppScreen.PROCESSING);
 
@@ -42,8 +43,8 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
-        // Historical eras: Run Gemini AI transformation (no source image needed)
-        const result = await generateHistoricalImage(selectedEra, faceData);
+        // Historical eras: Run Gemini AI transformation
+        const result = await generateHistoricalImage(image, selectedEra, faceData);
         resultImage = result.image;
         setGeneratedPrompt(result.prompt);
 
@@ -58,11 +59,10 @@ const App: React.FC = () => {
         if (attempts >= maxAttempts) {
           // All retries failed
           console.error("All processing attempts failed. Resetting to splash screen.");
-          // Reset to splash screen like the New Adventure button
           handleRestart();
           setCurrentScreen(AppScreen.SPLASH);
         } else {
-          // Wait a bit before retrying (optional delay)
+          // Wait a bit before retrying
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
@@ -71,6 +71,7 @@ const App: React.FC = () => {
 
   const handleRestart = () => {
     setGeneratedImage(null);
+    setCapturedImage(null);
     setGeneratedPrompt('');
     setSelectedEra(null);
     setFaceDetectionResult(null);
@@ -107,7 +108,7 @@ const App: React.FC = () => {
           ) : <LoadingScreen />
         );
       default:
-        return <SplashScreen onStart={handleStart} />;
+        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
     }
   };
 

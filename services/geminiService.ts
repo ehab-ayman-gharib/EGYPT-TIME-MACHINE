@@ -41,39 +41,20 @@ export interface GenerationResult {
 }
 
 export const generateHistoricalImage = async (
-  base64Image: string,
+  _unusedImage: string,
   era: EraData,
   faceData: FaceDetectionResult
 ): Promise<GenerationResult> => {
   const ai = getAiClient();
-  const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
 
   // 1. Calculate Group Description
   let subjectDescription = "";
-  let includeCharacter = false;
-
-  const COMPANIONS = [
-    {
-      name: "QUEEN NEFERTITI",
-      description: "the legendary Queen Nefertiti, recognizable by her iconic tall, flat-topped blue cap crown (Nemes), a vibrant and colorful jeweled Wesekh collar, and an elegant white pleated linen sheath gown. She should have her distinct regal facial features and traditional Egyptian kohl eye makeup."
-    },
-    {
-      name: "PHARAOH THUTMOSE III",
-      description: "the great warrior Pharaoh Thutmose III, wearing the iconic Blue War Crown (Khepresh) with the golden Uraeus cobra, a broad gold chest collar, and a stiff pleated royal kilt with a golden belt. He stands with a powerful and majestic presence."
-    },
-    {
-      name: "THE GODDESS ISIS",
-      description: "the divine Goddess Isis, wearing her sacred headdress featuring the sun disk nestled between cow horns and the vulture crown. She is dressed in a magnificent form-fitting sheath dress adorned with gold beads and carries a golden Ankh."
-    }
-  ];
-
+  
   if (faceData.totalPeople === 1) {
     if (faceData.childCount > 0) subjectDescription = "a young child";
     else if (faceData.maleCount >= 1) subjectDescription = "a man";
     else if (faceData.femaleCount > 0) subjectDescription = "a woman";
     else subjectDescription = "a person";
-
-
   } else {
     const parts = [];
     if (faceData.maleCount > 0) parts.push(`${faceData.maleCount} ${faceData.maleCount > 1 ? 'men' : 'man'}`);
@@ -88,45 +69,43 @@ export const generateHistoricalImage = async (
   }
 
   // 2. Select Scene and Clothing
-  let sceneIdx = 0;
-  const lastScenesKey = 'extra_last_scenes';
-  const lastScenes = JSON.parse(localStorage.getItem(lastScenesKey) || '{}');
-  const lastIdx = lastScenes[era.id];
+  let sceneIdx = faceData.selectedSceneryIdx ?? 0;
+  
+  // If no specific selection, use random but avoid repetition
+  if (faceData.selectedSceneryIdx === undefined) {
+    const lastScenesKey = 'extra_last_scenes';
+    const lastScenes = JSON.parse(localStorage.getItem(lastScenesKey) || '{}');
+    const lastIdx = lastScenes[era.id];
 
-  if (era.scenery.length > 1) {
-    // Try up to 10 times to get a different scene
-    for (let i = 0; i < 10; i++) {
-      sceneIdx = Math.floor(Math.random() * era.scenery.length);
-      if (sceneIdx !== lastIdx) break;
+    if (era.scenery.length > 1) {
+      for (let i = 0; i < 10; i++) {
+        sceneIdx = Math.floor(Math.random() * era.scenery.length);
+        if (sceneIdx !== lastIdx) break;
+      }
+    } else {
+      sceneIdx = 0;
     }
-  } else {
-    sceneIdx = 0;
+
+    lastScenes[era.id] = sceneIdx;
+    localStorage.setItem(lastScenesKey, JSON.stringify(lastScenes));
   }
 
-  // Save selected scene to prevent repetition in next session
-  lastScenes[era.id] = sceneIdx;
-  localStorage.setItem(lastScenesKey, JSON.stringify(lastScenes));
-
   const scene = era.scenery[sceneIdx];
-  console.log(`[Prompt Gen] Selected non-repeating scene #${sceneIdx} for era ${era.id} (last was ${lastIdx})`);
+  
   const getUniqueClothing = (count: number, clothingOptions: string[], singularLabel: string) => {
     if (!clothingOptions || clothingOptions.length === 0) return `the ${singularLabel} wearing era-appropriate attire`;
     if (count === 1) {
       return `the ${singularLabel} wearing ${clothingOptions[Math.floor(Math.random() * clothingOptions.length)]}`;
     }
 
-    // Copy and shuffle options for this run to assign distinct styles
     let shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
     let resultParts = [];
 
     for (let i = 0; i < count; i++) {
-      // Reshuffle if we run out of unique options
       if (i > 0 && i % clothingOptions.length === 0) {
         shuffledOptions = [...clothingOptions].sort(() => Math.random() - 0.5);
       }
       const option = shuffledOptions[i % clothingOptions.length];
-
-      // Define it as "Man 1 wearing...", "Woman 2 wearing..."
       const labelText = `${singularLabel.charAt(0).toUpperCase() + singularLabel.slice(1)} ${i + 1}`;
       resultParts.push(`${labelText} wearing ${option}`);
     }
@@ -134,13 +113,8 @@ export const generateHistoricalImage = async (
   };
 
   const clothingParts: string[] = [];
-
-  if (faceData.maleCount > 0) {
-    clothingParts.push(getUniqueClothing(faceData.maleCount, scene.maleClothingIds, 'man'));
-  }
-  if (faceData.femaleCount > 0) {
-    clothingParts.push(getUniqueClothing(faceData.femaleCount, scene.femaleClothingIds, 'woman'));
-  }
+  if (faceData.maleCount > 0) clothingParts.push(getUniqueClothing(faceData.maleCount, scene.maleClothingIds, 'man'));
+  if (faceData.femaleCount > 0) clothingParts.push(getUniqueClothing(faceData.femaleCount, scene.femaleClothingIds, 'woman'));
   if (faceData.childCount > 0) {
     if (faceData.childCount === 1) {
       clothingParts.push(`the child wearing historically accurate ${era.name} child attire`);
@@ -156,42 +130,22 @@ export const generateHistoricalImage = async (
   const clothingDescription = clothingParts.join("\n    ");
 
   // 3. Construct Unified Prompt
-  let prompt = "";
-  if (includeCharacter) {
-    const companion = COMPANIONS[Math.floor(Math.random() * COMPANIONS.length)];
-    prompt = `
-    A magnificent cinematic duo portrait set in ${scene.prompt}. 
-    The photograph features two individuals standing side-by-side in a shared moment:
-    
-    1. THE USER: A person from the provided photo, transformed into a historical figure of ${era.name} Egypt wearing ${clothingDescription}. Their facial features and identity MUST be perfectly preserved.
-    2. THE COMPANION: ${companion.description}
-    
-    COMPOSITION:
-    They should be standing gracefully side-by-side or shoulder-to-shoulder, integrated into the same physical space with cohesive lighting and shadows. This should look like a professional, high-quality historical photograph.
-    Absolutely no modern technology, cameras, or mobile phones.
-    
-    ${IDENTITY_PRESERVATION_GUIDE}
-    `;
-  } else {
-    // Normal Group Photo or No Character
-    prompt = `
+  const prompt = `
     ${SHARED_PROMPT_INSTRUCTIONS}
     
-    INPUT: A photo of ${subjectDescription}.
-    TASK: Place them into ${scene.prompt} during the ${era.name} era.
+    SCENE: ${scene.prompt} during the ${era.name} era.
+    SUBJECTS: ${subjectDescription}.
     CLOTHING: ${clothingDescription}. 
     
-    STYLE: Professional cinematic photography, 9:16 portrait.
+    STYLE: Professional cinematic photography, 9:16 portrait, high resolution.
     
     ${IDENTITY_PRESERVATION_GUIDE}
     `;
-  }
 
   console.log("------------------- GENERATED PROMPT -------------------");
   console.log(prompt);
   console.log("--------------------------------------------------------");
 
-  // Using raw object structure to bypass potential TS mismatches with the SDK
   const safetySettings: any[] = [
     { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
     { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
@@ -201,8 +155,7 @@ export const generateHistoricalImage = async (
   ];
 
   const requestConfig: any = {
-    temperature: 0.2,
-    // Add the seed here. It must be an integer.
+    temperature: 1,
     // @ts-ignore
     imageConfig: {
       aspectRatio: "9:16"
@@ -210,42 +163,25 @@ export const generateHistoricalImage = async (
     safetySettings: safetySettings
   };
 
-  console.log("Gemini Request Config:", JSON.stringify(requestConfig, null, 2));
-
   try {
-    // 4. Send to Gemini
+    // 4. Send to Gemini (Text-to-Image)
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-     // model: 'gemini-3.1-flash-image-preview',
+      model: 'gemini-2.5-flash-image',
       config: requestConfig,
       contents: [
         {
           parts: [
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: cleanBase64
-              }
-            },
             { text: prompt }
           ]
         }
       ]
     });
 
-    // Extract image from response
     const candidate = response.candidates?.[0];
     if (candidate) {
-      if (candidate.finishReason !== 'STOP') {
-        console.warn('Gemini Generation Warning: Finish Reason:', candidate.finishReason);
-        console.warn('Safety Ratings:', JSON.stringify(candidate.safetyRatings, null, 2));
-      }
-
       for (const part of candidate.content?.parts || []) {
         if (part.inlineData) {
-          // Increment dashboard count after successful generation
           incrementGeneratedCount();
-
           return {
             image: `data:image/jpeg;base64,${part.inlineData.data}`,
             prompt: prompt
@@ -254,7 +190,6 @@ export const generateHistoricalImage = async (
       }
     }
 
-    console.error('Gemini No Image Generated. Response:', JSON.stringify(response, null, 2));
     throw new Error("No image generated");
   } catch (error) {
     console.error("Gemini Generation Error:", error);
